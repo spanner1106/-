@@ -551,6 +551,72 @@
     .capture-panel .mini-card.joker-card .rank { font-size:5.5px !important; }
   }
 
+
+
+  /* v1.9 card readability pass: larger cards/ranks, one centered suit glyph. */
+  .card .suit { display:none !important; }
+  .card .rank {
+    top:5px !important; left:5px !important;
+    font-size:clamp(15px,1.9vw,23px) !important;
+    line-height:1 !important; letter-spacing:-.45px !important;
+  }
+  .card .big {
+    left:50% !important; top:57% !important;
+    right:auto !important; bottom:auto !important;
+    transform:translate(-50%,-50%) !important;
+    font-size:clamp(29px,3.4vw,44px) !important;
+    line-height:1 !important;
+  }
+  .card.joker-card .rank {
+    left:3px !important; top:5px !important;
+    width:calc(100% - 6px) !important;
+    font-size:clamp(9px,1.2vw,13px) !important;
+    letter-spacing:0 !important; white-space:nowrap !important;
+    text-align:center !important;
+  }
+  .hand { height:clamp(102px,23vh,180px); }
+  .hand .card { max-width:94px; }
+  .hand .card .rank { font-size:clamp(16px,2vw,23px) !important; }
+  .hand .card .big { font-size:clamp(29px,3.6vw,44px) !important; }
+  .hand .card.joker-card .rank { font-size:clamp(10px,1.35vw,14px) !important; }
+
+  /* The four played-card slots around the table are larger too. */
+  .trick-slot { flex-basis:clamp(40px,5vw,50px) !important; }
+  .trick-slot .card {
+    width:clamp(38px,4.7vw,48px) !important;
+    height:clamp(56px,14vh,70px) !important;
+  }
+  .trick-slot .card .rank { font-size:clamp(12px,1.45vw,18px) !important; }
+  .trick-slot .card .big { font-size:clamp(27px,3.2vw,38px) !important; }
+
+  /* Phone landscape: use a little more height and width without squeezing 13 cards. */
+  @media (orientation:landscape) and (max-height:520px) {
+    .hand-area { left:60%; width:75%; bottom:2.5%; }
+    .hand { height:clamp(84px,25vh,100px) !important; }
+    .hand .card {
+      flex:0 0 clamp(46px,6vw,52px) !important;
+      width:clamp(46px,6vw,52px) !important;
+      height:100% !important; max-width:none !important;
+      margin-left:-7px !important; border-radius:5px !important;
+    }
+    .hand .card:first-child { margin-left:0 !important; }
+    .hand .card .rank { top:4px !important; left:3px !important; font-size:clamp(14px,2vw,18px) !important; }
+    .hand .card .big { font-size:clamp(28px,3.9vw,35px) !important; }
+    .hand .card.joker-card .rank { left:2px !important; width:calc(100% - 4px) !important; font-size:clamp(9px,1.45vw,13px) !important; }
+    .hand .card.selected { transform:translateY(-10px) !important; }
+
+    .trick-slots { height:clamp(60px,16vh,68px) !important; gap:4px !important; }
+    .trick-slot { flex:0 1 clamp(42px,5vw,49px) !important; }
+    .trick-slot .card { width:clamp(40px,5vw,46px) !important; height:clamp(58px,15vh,64px) !important; }
+    .trick-slot .card .rank { top:4px !important; left:4px !important; font-size:clamp(12px,1.6vw,15px) !important; }
+    .trick-slot .card .big { font-size:clamp(28px,3.8vw,34px) !important; }
+    .trick-slot .card.joker-card .rank { font-size:clamp(8px,1.2vw,11px) !important; }
+
+    .player-play-layer .trick-slot .card { width:clamp(40px,5vw,46px) !important; height:clamp(58px,15vh,64px) !important; }
+    .player-play-layer .trick-slot .card .rank { font-size:clamp(12px,1.6vw,15px) !important; }
+    .player-play-layer .trick-slot .card .big { font-size:clamp(28px,3.8vw,34px) !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -756,7 +822,7 @@
     el.type='button';
     el.dataset.id=card.id || cardId(card);
     el.setAttribute('aria-label',cardLabel(card));
-    el.innerHTML=`<span class="rank">${rankDisplay(card)}</span><span class="suit">${s.symbol}</span><span class="big">${s.symbol}</span>`;
+    el.innerHTML=`<span class="rank">${rankDisplay(card)}</span><span class="big">${s.symbol}</span>`;
     if(!inHand){el.tabIndex=-1;el.setAttribute('aria-hidden','true');return el;}
     const legal = legalCards('south').some(c=>c.id===card.id);
     el.classList.toggle('selected',selected===card.id);

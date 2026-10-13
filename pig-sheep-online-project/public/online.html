@@ -56,6 +56,92 @@
 .seat .special-marker{display:inline-grid;place-items:center;width:13px;height:13px;border:1px solid #f4d28a;border-radius:50%;background:linear-gradient(145deg,#153f78,#061b43);box-shadow:0 1px 3px #020b1e80;font-size:9px;line-height:1}
 @media(max-width:700px){.seat .avatar-specials{height:12px;gap:1px}.seat .special-marker{width:11px;height:11px;font-size:8px}}
 @media(max-height:430px) and (orientation:landscape){.seat .avatar-specials{height:11px}.seat .special-marker{width:10px;height:10px;font-size:7px}}
+
+
+/* v1.9: larger hand and played cards; remove the secondary suit under the rank. */
+.hand-zone { height:26%; }
+.hand { height:calc(100% - 14px); }
+.hand-card { height:95%; max-width:8.3%; margin-left:-1.1%; }
+.hand-card .rank {
+  top:4px; left:4px;
+  font-size:clamp(14px,2vw,20px) !important;
+  line-height:1; letter-spacing:-.3px;
+}
+.hand-card .suit, .played .suit { display:none !important; }
+.hand-card .big, .played .big {
+  left:50% !important; top:57% !important;
+  right:auto !important; bottom:auto !important;
+  transform:translate(-50%,-50%) !important;
+  line-height:1 !important;
+}
+.hand-card .big { font-size:clamp(25px,3.1vw,38px) !important; }
+.played {
+  width:clamp(40px,4.8vw,54px);
+  height:clamp(56px,7vw,74px);
+}
+.played .rank {
+  top:4px; left:4px;
+  font-size:clamp(14px,1.8vw,19px) !important;
+}
+.played .big { font-size:clamp(28px,3.2vw,38px) !important; }
+
+@media(max-width:700px) {
+  .hand-zone { left:13%; right:13%; height:24%; bottom:8.5%; }
+  .hand { height:calc(100% - 13px); }
+  .hand-card {
+    flex:0 0 9.5%; width:9.5%; max-width:9.5%;
+    height:96%; margin-left:-2.5%; border-radius:6px 6px 4px 4px;
+  }
+  .hand-card:first-child { margin-left:0; }
+  .hand-card .rank { top:4px; left:3px; font-size:clamp(14px,2vw,20px) !important; }
+  .hand-card .big { font-size:clamp(26px,3.8vw,33px) !important; }
+
+  .played { width:clamp(40px,5vw,44px); height:clamp(56px,7.4vw,64px); }
+  .played .rank { top:4px; left:4px; font-size:clamp(12px,1.55vw,15px) !important; }
+  .played .big { font-size:clamp(29px,4vw,35px) !important; }
+  .played.north { top:24%; }
+  .played.west { left:30%; }
+  .played.east { right:30%; }
+  .played.south { bottom:34%; }
+}
+@media(max-height:430px) and (orientation:landscape) {
+  .hand-zone { bottom:8%; height:25%; }
+  .hand-card { height:95%; }
+  .played { height:clamp(52px,13.5vh,58px); width:clamp(37px,4.7vw,42px); }
+  .played .big { font-size:clamp(27px,3.8vw,32px) !important; }
+  .played.south { bottom:35%; }
+}
+
+
+
+/* Final phone-landscape sizing pass: readable 13-card hand and larger four-seat plays. */
+@media (orientation:landscape) and (max-height:520px) {
+  .hand-zone { left:13%; right:13%; height:29%; bottom:8%; }
+  .hand { height:calc(100% - 13px); }
+  .hand-card {
+    flex:0 0 9.5%; width:9.5%; max-width:9.5%;
+    height:96%; margin-left:-2.3%; border-radius:6px 6px 4px 4px;
+  }
+  .hand-card:first-child { margin-left:0; }
+  .hand-card .rank { top:4px; left:3px; font-size:clamp(15px,2vw,18px) !important; }
+  .hand-card .big { font-size:clamp(30px,4vw,36px) !important; }
+
+  .played { width:clamp(43px,5.5vw,48px) !important; height:clamp(60px,16vh,66px) !important; }
+  .played .rank { top:4px; left:4px; font-size:clamp(14px,1.8vw,16px) !important; }
+  .played .big { font-size:clamp(30px,4.2vw,36px) !important; }
+  .played.north { top:21%; }
+  .played.west { left:30%; }
+  .played.east { right:30%; }
+  .played.south { bottom:32%; }
+}
+@media (orientation:landscape) and (max-height:370px) {
+  .hand-zone { height:28%; bottom:8%; }
+  .hand-card { height:94%; }
+  .played { width:clamp(40px,5vw,44px) !important; height:clamp(53px,15vh,57px) !important; }
+  .played.north { top:21%; }
+  .played.south { bottom:31%; }
+}
+
 </style></head><body><div class="app" id="app">
 <div class="rim"></div>
 <header class="topbar"><div class="brand"><div class="emblem">♠</div><div class="title">猪羊弟</div><div class="meta" id="topMeta">好友联机 · 等待连接</div></div><div class="top-actions"><span class="connection" id="connectionState">● 正在连接</span><button class="top-btn" id="soundBtn">音效开</button><button class="top-btn" id="backBtn">返回大厅</button></div></header>
@@ -91,8 +177,8 @@ function playerCardMarkup(p,key){const self=key==='south';const active=snapshot.
  return `<div class="${seatClass}" data-seat="${p.seat}"><div class="avatar-wrap"><div class="avatar">${escapeHtml(p.avatar||'🙂')}</div><div class="avatar-specials">${pigBadge}${sheepBadge}</div></div><div class="person"><div class="name">${escapeHtml(p.name)}${self?'（你）':''}</div><div class="detail">${active?'轮到出牌':(p.connected?'在线':'断线')} · ${count} 张</div><div class="score">累计 ${p.points||0} 点</div></div>${backs}</div>`;}
 function renderSeats(){const layer=$('playersLayer');layer.innerHTML='';const seats=snapshot.seats.filter(Boolean);for(const p of seats){const key=displayKeyForSeat(p.seat);layer.insertAdjacentHTML('beforeend',playerCardMarkup(p,key));}}
 function renderCaptures(){const layer=$('capturesLayer');layer.innerHTML='';for(const p of snapshot.seats.filter(Boolean)){const key=displayKeyForSeat(p.seat);const captured=p.captured||[];const hearts=captured.filter(c=>c.suit==='H').sort((a,b)=>RV[b.rank]-RV[a.rank]);const specials=captured.filter(c=>Object.hasOwn(SPECS,`${c.suit}-${c.rank}`));const div=document.createElement('div');div.className=`capture ${key}`;div.innerHTML=`<div class="cap-label"><span>${key==='south'?'我的':key==='north'?'北家':key==='west'?'西家':'东家'} · 红桃</span><span>${hearts.length}</span></div><div class="cap-cards">${hearts.map(miniCard).join('')||'<span class="mini empty"></span>'}</div><div class="cap-label" style="margin-top:4px"><span>特殊牌</span><span>${specials.length}</span></div><div class="cap-cards">${specials.map(miniCard).join('')||'<span class="mini empty"></span>'}</div>`;layer.appendChild(div);}}
-function renderPlays(){const layer=$('playsLayer');layer.innerHTML='';const g=snapshot.game;for(const item of (g.plays||[]).filter(Boolean)){const key=displayKeyForSeat(item.seat);const c=item.card;const el=document.createElement('div');el.className=`played ${key} ${SUITS[c.suit].red?'red':''}`;el.innerHTML=`<span class="rank">${escapeHtml(rankText(c))}</span><span class="suit">${SUITS[c.suit].symbol}</span><div class="big">${SUITS[c.suit].symbol}</div>`;if(g.trickWinnerSeat===item.seat)el.style.outline='2px solid #ffd775';layer.appendChild(el);}}
-function renderHand(){const p=ownPlayer();const hand=$('hand');hand.innerHTML='';const cards=p?.hand||[];const legal=new Set(legalHand().map(c=>c.id));for(const c of cards){const b=document.createElement('button');b.className=`hand-card ${SUITS[c.suit].red?'red':''}${selected===c.id?' selected':''}${isMyTurn()&&!legal.has(c.id)?' illegal':''}`;b.type='button';b.dataset.id=c.id;b.innerHTML=`<span class="rank">${escapeHtml(rankText(c))}</span><span class="suit">${SUITS[c.suit].symbol}</span><div class="big">${SUITS[c.suit].symbol}</div>`;b.disabled=!isMyTurn();b.addEventListener('click',()=>tapCard(c));hand.appendChild(b);}
+function renderPlays(){const layer=$('playsLayer');layer.innerHTML='';const g=snapshot.game;for(const item of (g.plays||[]).filter(Boolean)){const key=displayKeyForSeat(item.seat);const c=item.card;const el=document.createElement('div');el.className=`played ${key} ${SUITS[c.suit].red?'red':''}`;el.innerHTML=`<span class="rank">${escapeHtml(rankText(c))}</span><div class="big">${SUITS[c.suit].symbol}</div>`;if(g.trickWinnerSeat===item.seat)el.style.outline='2px solid #ffd775';layer.appendChild(el);}}
+function renderHand(){const p=ownPlayer();const hand=$('hand');hand.innerHTML='';const cards=p?.hand||[];const legal=new Set(legalHand().map(c=>c.id));for(const c of cards){const b=document.createElement('button');b.className=`hand-card ${SUITS[c.suit].red?'red':''}${selected===c.id?' selected':''}${isMyTurn()&&!legal.has(c.id)?' illegal':''}`;b.type='button';b.dataset.id=c.id;b.innerHTML=`<span class="rank">${escapeHtml(rankText(c))}</span><div class="big">${SUITS[c.suit].symbol}</div>`;b.disabled=!isMyTurn();b.addEventListener('click',()=>tapCard(c));hand.appendChild(b);}
  $('handHead').textContent=`我的手牌 · ${cards.length} 张`;const canPlay=isMyTurn()&&selected&&legal.has(selected);$('playBtn').disabled=!canPlay;$('playBtn').textContent=gModeLabel();}
 function gModeLabel(){if(!snapshot?.game)return '出牌';const m=snapshot.game.mode;return m==='resolving'?'本墩结算中…':(m==='settlement'?'等待下一局':m==='matchEnd'?'整场结束':'出牌');}
 function renderGame(){if(!snapshot?.game)return;const g=snapshot.game;show('gameView');$('topMeta').textContent=`房间 ${roomCode} · 好友联机`;$('roundPill').innerHTML=`第 <strong>${g.roundNumber}</strong> 局 · 第 <strong>${g.trickCount}</strong> 墩`;
