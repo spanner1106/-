@@ -634,6 +634,44 @@
 @media(max-width:700px){.avatar.special-owner{font-size:25px}.avatar-token{font-size:14px}}
 @media(max-height:430px) and (orientation:landscape){.avatar.special-owner{font-size:20px}.avatar-token{font-size:12px}}
 
+
+
+/* v2.5: compact settlement dialog without changing the gameplay UI. */
+.modal-backdrop.clear-bg { padding:10px; }
+.modal-backdrop.clear-bg .modal {
+  width:min(380px,88vw);
+  max-height:82dvh;
+  overflow:auto;
+  padding:12px 14px;
+  border-radius:14px;
+}
+.modal-backdrop.clear-bg .modal h2 {
+  margin:0 0 6px;
+  font-size:18px;
+}
+.modal-backdrop.clear-bg .settle-table {
+  width:100%;
+  min-width:0;
+  table-layout:fixed;
+  margin:5px 0;
+  font-size:10px;
+}
+.modal-backdrop.clear-bg .settle-table th,
+.modal-backdrop.clear-bg .settle-table td {
+  padding:4px 2px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.modal-backdrop.clear-bg .settle-table th:first-child,
+.modal-backdrop.clear-bg .settle-table td:first-child { width:30%; }
+.modal-backdrop.clear-bg #settlementAction {
+  margin-top:5px !important;
+  padding:6px 10px;
+  font-size:12px;
+  border-radius:8px;
+}
+
 </style>
 </head>
 <body>

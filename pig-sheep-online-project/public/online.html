@@ -159,6 +159,42 @@
 @media(max-width:700px){.seat .avatar.special-owner{font-size:23px}.seat .avatar-token{font-size:12px}}
 @media(max-height:430px) and (orientation:landscape){.seat .avatar.special-owner{font-size:20px}.seat .avatar-token{font-size:11px}}
 
+
+
+/* v2.5: compact online settlement dialog; other panels remain unchanged. */
+#resultOverlay { padding:8px; }
+#resultOverlay .result-panel {
+  width:min(460px,88vw);
+  max-height:82dvh;
+  padding:12px;
+  border-radius:13px;
+}
+#resultOverlay .result-panel h2 {
+  margin:0 0 5px;
+  font-size:18px;
+}
+#resultOverlay .result-table {
+  width:100%;
+  table-layout:fixed;
+  font-size:10px;
+  margin:5px 0;
+}
+#resultOverlay .result-table th,
+#resultOverlay .result-table td {
+  padding:4px 2px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#resultOverlay .result-table th:first-child,
+#resultOverlay .result-table td:first-child { width:30%; }
+#resultOverlay .actions { gap:6px; }
+#resultOverlay .actions .btn {
+  padding:7px 10px;
+  font-size:12px;
+  border-radius:8px;
+}
+
 </style></head><body><div class="app" id="app">
 <div class="rim"></div>
 <header class="topbar"><div class="brand"><div class="emblem">♠</div><div class="title">猪羊弟</div><div class="meta" id="topMeta">好友联机 · 等待连接</div></div><div class="top-actions"><span class="connection" id="connectionState">● 正在连接</span><button class="top-btn" id="soundBtn">音效开</button><button class="top-btn" id="backBtn">返回大厅</button></div></header>
