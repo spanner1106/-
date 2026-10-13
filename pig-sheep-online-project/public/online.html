@@ -15,6 +15,39 @@
  .center-label{top:40%;font-size:10px}.center-score{top:45%;font-size:9px}
  .panel{max-height:88dvh;overflow-y:auto;padding:10px 14px;border-radius:12px}.panel h2{font-size:16px;margin-bottom:4px}.panel .muted{font-size:10px;line-height:1.35}.room-code{margin:7px 0;padding:7px 10px}.room-code strong{font-size:22px;letter-spacing:4px}.seat-grid{margin:7px 0;gap:5px}.seat-box{min-height:65px;padding:5px 3px;gap:2px}.seat-box .face{width:25px;height:25px;font-size:14px}.seat-box b{font-size:9px}.seat-box small{font-size:8px}.room-lower{grid-template-columns:1fr 1.2fr;gap:8px}.chatbox{height:70px}.chat-head{padding:4px 7px}.chat-send{padding:4px}.chat-send input{padding:5px;font-size:10px}.chat-send button{padding:4px 7px;font-size:10px}.room-lower .btn{padding:7px 9px;font-size:10px}.note{font-size:9px;margin-top:5px}
 }.seat.west,.seat.east{top:34%}.seat.south{bottom:17%}.capture.west,.capture.east{top:50%}.capture.south{bottom:0}.hand-zone{height:20%;bottom:2%}.center-label{top:39%}.center-score{top:44%}.played.north{top:23%}.played.south{bottom:28%}.panel{padding:12px}.seat-grid{margin:8px 0}.seat-box{min-height:75px}}
+
+/* 移动端收牌区修复：固定卡片宽度，禁止压缩/负边距叠牌，内容不足一行时自动换行。 */
+@media(max-width:700px), (orientation:landscape) and (max-height:430px) {
+  .capture .cap-cards {
+    display:flex !important;
+    flex-wrap:wrap !important;
+    align-items:flex-start;
+    align-content:flex-start;
+    gap:1px !important;
+    overflow:visible !important;
+  }
+  .capture .mini:not(.empty) {
+    box-sizing:border-box;
+    width:10px !important;
+    height:14px !important;
+    flex:0 0 10px !important;
+    min-width:10px !important;
+    margin:0 !important;
+    padding:0;
+    line-height:1;
+  }
+}
+@media(max-height:430px) and (orientation:landscape) {
+  .capture .cap-cards { gap:1px !important; }
+  .capture .mini:not(.empty) {
+    width:9px !important;
+    height:12px !important;
+    flex:0 0 9px !important;
+    min-width:9px !important;
+    font-size:6px !important;
+  }
+}
+
 </style></head><body><div class="app" id="app">
 <div class="rim"></div>
 <header class="topbar"><div class="brand"><div class="emblem">♠</div><div class="title">猪羊弟</div><div class="meta" id="topMeta">好友联机 · 等待连接</div></div><div class="top-actions"><span class="connection" id="connectionState">● 正在连接</span><button class="top-btn" id="soundBtn">音效开</button><button class="top-btn" id="backBtn">返回大厅</button></div></header>

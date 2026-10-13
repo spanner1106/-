@@ -502,6 +502,53 @@
   /* 收牌展示框只显示牌面点数/字母；不显示花色，避免小牌中数字与花色重叠。 */
   .capture-cards .mini-card .rank{inset:0!important;display:flex;align-items:center;justify-content:center;font-size:clamp(6px,.7vw,8px)!important;line-height:1!important;letter-spacing:-.2px!important;text-align:center;}
   .capture-cards .mini-card.joker-card .rank{font-size:clamp(5.5px,.62vw,7px)!important;letter-spacing:0!important;}
+
+
+  /* 移动端收牌展示：卡片不再互相压叠；空间不足时自动换行。 */
+  @media (max-width:700px), (orientation:landscape) and (max-height:520px) {
+    .capture-panel .capture-cards {
+      display:flex !important;
+      flex-wrap:wrap !important;
+      align-items:flex-start;
+      align-content:flex-start;
+      gap:1px !important;
+      overflow:visible !important;
+    }
+    .capture-panel .mini-card {
+      box-sizing:border-box;
+      width:11px !important;
+      height:15px !important;
+      flex:0 0 11px !important;
+      margin-left:0 !important;
+      margin-right:0 !important;
+    }
+    .capture-panel .mini-card .rank {
+      inset:0 !important;
+      display:flex !important;
+      align-items:center;
+      justify-content:center;
+      font-size:7px !important;
+      line-height:1 !important;
+      letter-spacing:-.2px !important;
+      text-align:center;
+      white-space:nowrap;
+    }
+    .capture-panel .mini-card.joker-card .rank {
+      font-size:6px !important;
+      letter-spacing:0 !important;
+    }
+  }
+  @media (orientation:landscape) and (max-height:370px) {
+    .capture-panel .capture-cards { gap:1px !important; }
+    .capture-panel .mini-card {
+      width:10px !important;
+      height:13px !important;
+      flex:0 0 10px !important;
+    }
+    .capture-panel .mini-card .rank { font-size:6px !important; }
+    .capture-panel .mini-card.joker-card .rank { font-size:5.5px !important; }
+  }
+
 </style>
 </head>
 <body>
