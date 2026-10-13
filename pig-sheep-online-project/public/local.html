@@ -617,6 +617,13 @@
     .player-play-layer .trick-slot .card .big { font-size:clamp(28px,3.8vw,34px) !important; }
   }
 
+
+/* v2.0: larger pig/sheep badges below each avatar. */
+.avatar-specials{height:25px;min-width:25px;gap:4px}
+.special-marker{width:23px;height:23px;font-size:17px;border-width:1px}
+@media(max-width:700px){.avatar-specials{height:22px;gap:3px}.special-marker{width:20px;height:20px;font-size:15px}}
+@media(max-height:430px) and (orientation:landscape){.avatar-specials{height:20px;gap:2px}.special-marker{width:18px;height:18px;font-size:14px}}
+
 </style>
 </head>
 <body>
@@ -970,6 +977,65 @@
     };
     if(ctx.state==='suspended')ctx.resume().then(emit).catch(()=>{});else emit();
   }
+  // 猪叫与羊叫：Web Audio 合成的卡通化短音效，无需外部音频文件；跟随游戏音效开关与音量。
+  function playAnimalCall(kind, delay=0){
+    if(!soundOn)return;
+    const ctx=getSoundContext();if(!ctx)return;
+    const emit=()=>{
+      if(!soundOn||!soundMasterGain)return;
+      const t=ctx.currentTime+Math.max(0,delay);
+      const main=ctx.createOscillator();
+      const formant=ctx.createBiquadFilter();
+      const env=ctx.createGain();
+      if(kind==='pig'){
+        // Two nasal, falling grunts with a low snort underneath.
+        main.type='sawtooth';
+        main.frequency.setValueAtTime(185,t);
+        main.frequency.exponentialRampToValueAtTime(112,t+.12);
+        main.frequency.setValueAtTime(158,t+.18);
+        main.frequency.exponentialRampToValueAtTime(92,t+.43);
+        formant.type='bandpass';formant.Q.setValueAtTime(1.25,t);
+        formant.frequency.setValueAtTime(570,t);
+        formant.frequency.exponentialRampToValueAtTime(360,t+.17);
+        formant.frequency.exponentialRampToValueAtTime(650,t+.29);
+        env.gain.setValueAtTime(.0001,t);
+        env.gain.exponentialRampToValueAtTime(.14,t+.025);
+        env.gain.exponentialRampToValueAtTime(.0001,t+.145);
+        env.gain.setValueAtTime(.0001,t+.18);
+        env.gain.exponentialRampToValueAtTime(.115,t+.21);
+        env.gain.exponentialRampToValueAtTime(.0001,t+.45);
+        main.connect(formant);formant.connect(env);env.connect(soundMasterGain);
+        main.start(t);main.stop(t+.47);
+        const low=ctx.createOscillator(),lowGain=ctx.createGain();
+        low.type='triangle';low.frequency.setValueAtTime(94,t);
+        low.frequency.exponentialRampToValueAtTime(62,t+.39);
+        lowGain.gain.setValueAtTime(.0001,t);
+        lowGain.gain.exponentialRampToValueAtTime(.045,t+.035);
+        lowGain.gain.exponentialRampToValueAtTime(.0001,t+.41);
+        low.connect(lowGain);lowGain.connect(soundMasterGain);low.start(t);low.stop(t+.43);
+      }else{
+        // A nasal, wavering 'baa' with a descending tail.
+        main.type='sawtooth';
+        main.frequency.setValueAtTime(465,t);
+        main.frequency.exponentialRampToValueAtTime(365,t+.18);
+        main.frequency.exponentialRampToValueAtTime(290,t+.38);
+        main.frequency.exponentialRampToValueAtTime(330,t+.56);
+        formant.type='bandpass';formant.Q.setValueAtTime(2.2,t);
+        formant.frequency.setValueAtTime(880,t);
+        formant.frequency.exponentialRampToValueAtTime(690,t+.42);
+        env.gain.setValueAtTime(.0001,t);
+        env.gain.exponentialRampToValueAtTime(.085,t+.045);
+        env.gain.setValueAtTime(.065,t+.19);
+        env.gain.exponentialRampToValueAtTime(.0001,t+.59);
+        main.connect(formant);formant.connect(env);env.connect(soundMasterGain);
+        const vibrato=ctx.createOscillator(),vibratoDepth=ctx.createGain();
+        vibrato.type='sine';vibrato.frequency.setValueAtTime(7,t);vibratoDepth.gain.setValueAtTime(13,t);
+        vibrato.connect(vibratoDepth);vibratoDepth.connect(main.frequency);vibrato.start(t);vibrato.stop(t+.6);
+        main.start(t);main.stop(t+.61);
+      }
+    };
+    if(ctx.state==='suspended')ctx.resume().then(emit).catch(()=>{});else emit();
+  }
   function setActiveSeat(playerKey, winner=false){
     document.querySelectorAll('.seat').forEach(el=>el.classList.remove('active-turn','last-winner'));
     const active=document.querySelector(`.seat.${playerKey}`);if(active)active.classList.add(winner?'last-winner':'active-turn');
@@ -1274,7 +1340,11 @@
     winner.captured.push(...wonCards);winner.tricks++;
     for(const key of visualOrder)renderCapture(key,key===trickWinner?wonCards:[]);
     const thisWinner=trickWinner;
-    playGameCue('trick');
+    const capturedPig=wonCards.some(c=>cardId(c)==='S-Q');
+    const capturedSheep=wonCards.some(c=>cardId(c)==='D-J');
+    if(capturedPig)playAnimalCall('pig',0);
+    if(capturedSheep)playAnimalCall('sheep',capturedPig?0.62:0);
+    if(!capturedPig&&!capturedSheep)playGameCue('trick');
     showToast(`${captureNames[thisWinner]}赢得第 ${trickCount} 墩`);
     if(trickCount>=13){
       mode='settlement';selected=null;renderAll();settleRound();return;

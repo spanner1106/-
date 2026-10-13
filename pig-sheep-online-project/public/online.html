@@ -142,6 +142,13 @@
   .played.south { bottom:31%; }
 }
 
+
+/* v2.0: make pig/sheep markers clearly visible below player avatars. */
+.seat .avatar-specials{height:25px;min-width:25px;gap:4px}
+.seat .special-marker{width:23px;height:23px;font-size:17px;border-width:1px}
+@media(max-width:700px){.seat .avatar-specials{height:22px;gap:3px}.seat .special-marker{width:20px;height:20px;font-size:15px}}
+@media(max-height:430px) and (orientation:landscape){.seat .avatar-specials{height:20px;gap:2px}.seat .special-marker{width:18px;height:18px;font-size:14px}}
+
 </style></head><body><div class="app" id="app">
 <div class="rim"></div>
 <header class="topbar"><div class="brand"><div class="emblem">♠</div><div class="title">猪羊弟</div><div class="meta" id="topMeta">好友联机 · 等待连接</div></div><div class="top-actions"><span class="connection" id="connectionState">● 正在连接</span><button class="top-btn" id="soundBtn">音效开</button><button class="top-btn" id="backBtn">返回大厅</button></div></header>
@@ -199,12 +206,53 @@ function addChat(msg){if(!msg||seenChat.has(msg.id))return;seenChat.add(msg.id);
 function renderChatHistory(list){$('lobbyMessages').innerHTML='';$('gameMessages').innerHTML='';for(const m of list||[])addChat(m);}
 function sendChat(inputId){const value=$(inputId).value.trim();if(!value)return;socket.emit('chat:send',{roomCode,text:value});$(inputId).value='';}
 function updateConnection(){ $('connectionState').textContent=socket.connected?'● 已连接':'○ 重连中';$('connectionState').style.color=socket.connected?'#a1f0be':'#ffcf8a'; }
+function unlockAnimalAudio(){if(!soundOn)return;try{audioContext=audioContext||new (window.AudioContext||window.webkitAudioContext)();if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});}catch(_){}}
+document.addEventListener('pointerdown',unlockAnimalAudio,{once:true,passive:true});
+function playAnimalCall(kind,delay=0){
+ if(!soundOn)return;
+ try{
+  audioContext=audioContext||new (window.AudioContext||window.webkitAudioContext)();
+  const ctx=audioContext;
+  const emit=()=>{
+   if(!soundOn)return;
+   const t=ctx.currentTime+Math.max(0,delay),out=ctx.createGain();out.gain.value=.62;out.connect(ctx.destination);
+   const main=ctx.createOscillator(),formant=ctx.createBiquadFilter(),env=ctx.createGain();
+   if(kind==='pig'){
+    main.type='sawtooth';main.frequency.setValueAtTime(185,t);main.frequency.exponentialRampToValueAtTime(112,t+.12);main.frequency.setValueAtTime(158,t+.18);main.frequency.exponentialRampToValueAtTime(92,t+.43);
+    formant.type='bandpass';formant.Q.setValueAtTime(1.25,t);formant.frequency.setValueAtTime(570,t);formant.frequency.exponentialRampToValueAtTime(360,t+.17);formant.frequency.exponentialRampToValueAtTime(650,t+.29);
+    env.gain.setValueAtTime(.0001,t);env.gain.exponentialRampToValueAtTime(.14,t+.025);env.gain.exponentialRampToValueAtTime(.0001,t+.145);env.gain.setValueAtTime(.0001,t+.18);env.gain.exponentialRampToValueAtTime(.115,t+.21);env.gain.exponentialRampToValueAtTime(.0001,t+.45);
+    main.connect(formant);formant.connect(env);env.connect(out);main.start(t);main.stop(t+.47);
+    const low=ctx.createOscillator(),lg=ctx.createGain();low.type='triangle';low.frequency.setValueAtTime(94,t);low.frequency.exponentialRampToValueAtTime(62,t+.39);lg.gain.setValueAtTime(.0001,t);lg.gain.exponentialRampToValueAtTime(.045,t+.035);lg.gain.exponentialRampToValueAtTime(.0001,t+.41);low.connect(lg);lg.connect(out);low.start(t);low.stop(t+.43);
+   }else{
+    main.type='sawtooth';main.frequency.setValueAtTime(465,t);main.frequency.exponentialRampToValueAtTime(365,t+.18);main.frequency.exponentialRampToValueAtTime(290,t+.38);main.frequency.exponentialRampToValueAtTime(330,t+.56);
+    formant.type='bandpass';formant.Q.setValueAtTime(2.2,t);formant.frequency.setValueAtTime(880,t);formant.frequency.exponentialRampToValueAtTime(690,t+.42);
+    env.gain.setValueAtTime(.0001,t);env.gain.exponentialRampToValueAtTime(.085,t+.045);env.gain.setValueAtTime(.065,t+.19);env.gain.exponentialRampToValueAtTime(.0001,t+.59);
+    main.connect(formant);formant.connect(env);env.connect(out);
+    const vibrato=ctx.createOscillator(),depth=ctx.createGain();vibrato.type='sine';vibrato.frequency.setValueAtTime(7,t);depth.gain.setValueAtTime(13,t);vibrato.connect(depth);depth.connect(main.frequency);vibrato.start(t);vibrato.stop(t+.6);main.start(t);main.stop(t+.61);
+   }
+   setTimeout(()=>{try{out.disconnect();}catch(_){}},Math.max(900,(delay+.8)*1000));
+  };
+  if(ctx.state==='suspended')ctx.resume().then(emit).catch(()=>{});else emit();
+ }catch(_){}
+}
+function cardKeyForSound(c){return c&&(c.id||`${c.suit}-${c.rank}`);}
+function playNewAnimalCaptureSounds(previous,next){
+ if(!previous?.game||!next?.game||previous.game.roundNumber!==next.game.roundNumber)return false;
+ const before=new Set();
+ for(const p of (previous.seats||[]))for(const c of (p?.captured||[]))before.add(cardKeyForSound(c));
+ const newlyCaptured=new Set();
+ for(const p of (next.seats||[]))for(const c of (p?.captured||[])){const id=cardKeyForSound(c);if(id&&!before.has(id))newlyCaptured.add(id);}
+ const pig=newlyCaptured.has('S-Q'),sheep=newlyCaptured.has('D-J');
+ if(pig)playAnimalCall('pig',0);
+ if(sheep)playAnimalCall('sheep',pig?.62:0);
+ return pig||sheep;
+}
 function playCue(kind='card'){if(!soundOn)return;try{audioContext=audioContext||new (window.AudioContext||window.webkitAudioContext)();if(audioContext.state==='suspended')audioContext.resume();const now=audioContext.currentTime;const notes=kind==='card'?[{f:470,d:.045,a:.035},{f:310,d:.055,a:.025}]:kind==='trick'?[{f:520,d:.06,a:.03},{f:650,d:.08,a:.025}]:[{f:540,d:.08,a:.03},{f:760,d:.12,a:.022}];notes.forEach((n,i)=>{const o=audioContext.createOscillator(),g=audioContext.createGain();o.type='triangle';o.frequency.value=n.f;g.gain.setValueAtTime(.0001,now+i*.035);g.gain.exponentialRampToValueAtTime(n.a,now+i*.035+.01);g.gain.exponentialRampToValueAtTime(.0001,now+i*.035+n.d);o.connect(g);g.connect(audioContext.destination);o.start(now+i*.035);o.stop(now+i*.035+n.d+.01);});}catch(_){}}
 function updateTurnClock(){if(!snapshot?.game||snapshot.game.mode!=='play'||!snapshot.game.turnDeadline)return;const sec=Math.max(0,Math.ceil((snapshot.game.turnDeadline-Date.now())/1000));const active=isMyTurn()?'轮到你出牌':`等待${({north:'北家',west:'西家',east:'东家'}[displayKeyForSeat(snapshot.game.currentTurnSeat)]||'玩家')}出牌`;if($('statusPill')&&!$('statusPill').textContent.includes('本墩结算'))$('statusPill').textContent=`${active} · ${sec} 秒`; }
 socket.on('connect',()=>{updateConnection();if(roomCode&&token)socket.emit('room:resume',{token});});socket.on('disconnect',()=>{updateConnection();toast('网络暂时断开，正在尝试重连…');});
 socket.on('room:entered',d=>{roomCode=d.roomCode;ownSeat=d.seat;isHost=d.isHost;localStorage.setItem('pigSheepOnline.roomCode',roomCode);$('roomCodeInput').value=roomCode;$('roomCodeDisplay').textContent=roomCode;show('lobbyView');$('topMeta').textContent=`房间 ${roomCode} · 等待玩家`;toast('已进入房间');});
 socket.on('room:summary',r=>{roomSummary=r;if(ownSeat===null&&snapshot)ownSeat=snapshot.ownSeat;if(roomCode!==r.roomCode)return;renderLobby();if(r.phase==='lobby')show('lobbyView');});
-socket.on('room:state',payload=>{roomSummary=payload.room;if(payload.game){const prev=snapshot;const previousRound=prev?.game?.roundNumber; snapshot=payload.game;const newCount=(snapshot.game.plays||[]).filter(Boolean).length; if(prev?.game && newCount>(prev.game.plays||[]).filter(Boolean).length)playCue('card');if(prev?.game?.mode==='resolving'&&snapshot.game.mode==='play')playCue('trick');if(prev?.game?.mode==='resolving'&&(snapshot.game.mode==='settlement'||snapshot.game.mode==='matchEnd'))playCue('settle');if(prev?.game?.mode==='play'&&(snapshot.game.mode==='settlement'||snapshot.game.mode==='matchEnd'))playCue('settle');lastPlayedCount=newCount;lastMode=snapshot.game.mode;lastRound=snapshot.game.roundNumber;if(previousRound!==undefined&&previousRound!==snapshot.game.roundNumber){selected=null;lastTapId=null;lastTapAt=0;}ownSeat=snapshot.ownSeat;isHost=roomSummary.hostSeat===ownSeat;roomCode=roomSummary.roomCode;localStorage.setItem('pigSheepOnline.roomCode',roomCode);renderLobby();renderGame();}else{snapshot=null;if(ownSeat===null||ownSeat<0) ownSeat=0;isHost=roomSummary.hostSeat===ownSeat;roomCode=roomSummary.roomCode;renderLobby();show('lobbyView');}});
+socket.on('room:state',payload=>{roomSummary=payload.room;if(payload.game){const prev=snapshot;const previousRound=prev?.game?.roundNumber; snapshot=payload.game;const specialCaptured=playNewAnimalCaptureSounds(prev,snapshot);const newCount=(snapshot.game.plays||[]).filter(Boolean).length; if(prev?.game && newCount>(prev.game.plays||[]).filter(Boolean).length)playCue('card');if(prev?.game?.mode==='resolving'&&snapshot.game.mode==='play'&&!specialCaptured)playCue('trick');if(prev?.game?.mode==='resolving'&&(snapshot.game.mode==='settlement'||snapshot.game.mode==='matchEnd'))playCue('settle');if(prev?.game?.mode==='play'&&(snapshot.game.mode==='settlement'||snapshot.game.mode==='matchEnd'))playCue('settle');lastPlayedCount=newCount;lastMode=snapshot.game.mode;lastRound=snapshot.game.roundNumber;if(previousRound!==undefined&&previousRound!==snapshot.game.roundNumber){selected=null;lastTapId=null;lastTapAt=0;}ownSeat=snapshot.ownSeat;isHost=roomSummary.hostSeat===ownSeat;roomCode=roomSummary.roomCode;localStorage.setItem('pigSheepOnline.roomCode',roomCode);renderLobby();renderGame();}else{snapshot=null;if(ownSeat===null||ownSeat<0) ownSeat=0;isHost=roomSummary.hostSeat===ownSeat;roomCode=roomSummary.roomCode;renderLobby();show('lobbyView');}});
 socket.on('notice',n=>toast(n.message||'操作未完成'));socket.on('chat:history',renderChatHistory);socket.on('chat:message',addChat);socket.on('room:left',d=>{snapshot=null;roomSummary=null;ownSeat=null;isHost=false;if(d&&d.reserved){roomCode=d.roomCode||roomCode;localStorage.setItem('pigSheepOnline.roomCode',roomCode);show('entryView');toast(d.message||'座位保留，可恢复房间');}else{roomCode='';localStorage.removeItem('pigSheepOnline.roomCode');token=makeToken();localStorage.setItem('pigSheepOnline.token',token);show('entryView');}});
 $('createBtn').addEventListener('click',()=>{if(!socket.connected)return toast('连接服务器中，请稍候');const t=Number($('targetInput').value||50);if(!Number.isFinite(t)||t<1||t>999)return toast('目标点数须在 1–999 之间');socket.emit('room:create',{token,name:$('nameInput').value,target:Math.floor(t)});});
 $('joinBtn').addEventListener('click',()=>{const code=$('roomCodeInput').value.trim().toUpperCase();if(code.length<4)return toast('请输入房间码');socket.emit('room:join',{token,name:$('nameInput').value,roomCode:code});});
