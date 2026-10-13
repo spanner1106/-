@@ -73,7 +73,7 @@ function startRound(room, roundNumber = 1) {
   const teamB = [0,1,2,3].filter(s=>!teamA.includes(s));
   const game={
     roundNumber, mode:'play', hands, captured:[[],[],[],[]], tricks:[0,0,0,0],
-    plays:[null,null,null,null], leadSuit:null, leaderSeat:c2Owner, currentTurnSeat:c2Owner,
+    plays:[null,null,null,null], specialPlayOwners:{pig:null,sheep:null}, leadSuit:null, leaderSeat:c2Owner, currentTurnSeat:c2Owner,
     trickCount:1, trickWinnerSeat:null, pigOwner, sheepOwner, teamA, teamB,
     target:room.target || 50, result:null, turnDeadline:Date.now()+30000
   };
@@ -108,6 +108,8 @@ function playCard(room, seat, id) {
   const card=checked.card;
   const index=game.hands[seat].findIndex(c=>cardId(c)===id);
   game.hands[seat].splice(index,1);
+  if(cardId(card)==='S-Q') game.specialPlayOwners.pig=seat;
+  if(cardId(card)==='D-J') game.specialPlayOwners.sheep=seat;
   game.plays[seat]=card;
   if(!game.leadSuit){game.leadSuit=card.suit;game.leaderSeat=seat;}
   const count=game.plays.filter(Boolean).length;
@@ -201,7 +203,7 @@ function serializeSnapshot(room, ownToken) {
   if(game){
     snap.game={roundNumber:game.roundNumber,mode:game.mode,leadSuit:game.leadSuit,leaderSeat:game.leaderSeat,
       currentTurnSeat:game.currentTurnSeat,trickCount:game.trickCount,trickWinnerSeat:game.trickWinnerSeat,
-      plays:game.plays.map((card,s)=>card?({seat:s,card:{...card}}):null),turnDeadline:game.turnDeadline,
+      plays:game.plays.map((card,s)=>card?({seat:s,card:{...card}}):null),specialPlayOwners:{...game.specialPlayOwners},turnDeadline:game.turnDeadline,
       result:game.result?JSON.parse(JSON.stringify(game.result)):null,
       teamInfo:(game.mode==='settlement'||game.mode==='matchEnd')?{pigOwner:game.pigOwner,sheepOwner:game.sheepOwner,teamA:game.teamA,teamB:game.teamB}:null};
   }
