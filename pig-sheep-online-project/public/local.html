@@ -38,6 +38,7 @@
   .dot{position:absolute;right:-2px;top:-3px;width:8px;height:8px;background:#ff514c;border-radius:50%;box-shadow:0 0 0 2px #10305f}
   .seat{position:absolute;z-index:3;display:flex;align-items:center;gap:9px;filter:drop-shadow(0 5px 6px #03102d70)}
   .seat.north{top:14.5%;left:50%;transform:translateX(-50%);flex-direction:row;text-align:left;gap:8px}
+  .seat.north .seat-state{display:none!important}
   .seat.west{top:40%;left:3.5%}.seat.east{top:40%;right:3.5%;flex-direction:row-reverse;text-align:right}
   .seat.south{left:3.5%;bottom:22%;}
   .avatar{width:clamp(43px,6.5vw,70px);height:clamp(43px,6.5vw,70px);border-radius:50%;position:relative;display:grid;place-items:center;flex:0 0 auto;background:radial-gradient(circle at 35% 25%,#a9d5ff,#477dc1 48%,#112957 75%);border:2px solid #f4d18b;box-shadow:0 0 0 3px #ffffff1b,0 0 0 5px #dcb66a35,inset 0 0 0 3px #19325b;color:white;font-size:clamp(20px,3vw,32px)}
@@ -1125,6 +1126,8 @@
       else if(tablePlays[key])text=key==='north'?'已出牌':`已出牌 · 剩 ${players[key].hand.length} 张`;
       else if(mode==='play' && currentTurn===key)text=key==='south'?'轮到你出牌':'正在思考…';
       else text=key==='north'?'':`剩余 ${players[key].hand.length} 张`;
+      // 北家不显示“正在思考”“已出牌”或其他状态文字。
+      if(key==='north')text='';
       if(nameEls[key])nameEls[key].textContent=text;
     }
     if(mode==='play')setActiveSeat(currentTurn);
@@ -1488,15 +1491,9 @@
       const cardScoreDisplay=cardScoreInfo.standalone?'+50（单独倒板）':(cardScoreInfo.transformer?`${cardScoreInfo.raw} × 2 = ${cardScoreInfo.total}`:`${cardScoreInfo.total>0?'+':''}${cardScoreInfo.total}`);
       return `<tr><td>${seatNames[k]} · ${safeText(players[k].name)}</td><td>${cardScoreDisplay}</td><td style="color:${change>0?'#9ff0bb':change<0?'#ffb2b2':'inherit'};font-weight:800">${change>0?'+':''}${change}</td><td>${point>0?'+':''}${point}</td></tr>`;
     }).join('');
-    const resultDetail=grand?`满贯玩家：${seatNames[grandOwner]}`:(fullRed?`全红玩家：${seatNames[fullRedOwner]}`:`猪羊方（A队）总分 ${teamScoreA>0?'+':''}${teamScoreA} 分；另一队（B队）总分 ${teamScoreB>0?'+':''}${teamScoreB} 分`);
-    const pointRuleSummary=isOneVsThree?`1 打 3：单人队本局点数变化为 ±${roundDelta*3}，三人队每人反向变化 ±${roundDelta}`:`2 打 2：每位玩家本局点数变化为 ±${roundDelta}`;
+    // 结算画面只保留四列数据；保留必要的下一局/新开整场操作按钮。
     const body=`
-      <p><b>本局牌型：</b><span style="color:#ffdc83">${specialType}</span>。${pointRuleSummary}。</p>
-      <p><b>初始持猪（发牌时）：</b>${seatNames[teams.pigOwner]}　<b>初始持羊（发牌时）：</b>${seatNames[teams.sheepOwner]} <span style="color:#bcd7ff">（据此组队，本局固定）</span></p>
-      <p><b>本局胜方：</b>${listNames(winningTeam)}；${winReason}。</p>
-      <p><b>判定依据：</b>${resultDetail}</p>
       <div style="overflow-x:auto"><table class="settle-table"><thead><tr><th>玩家</th><th>牌面分</th><th>本局变化</th><th>累计点数</th></tr></thead><tbody>${scoreRows}</tbody></table></div>
-      <p>${isMatchEnd?`<b style="color:#ffe29b">达到目标 ${matchTargetPoint} 点：${listNames(metTarget)}。整场游戏结束。</b>`:`目标 ${matchTargetPoint} 点；任意一名玩家达到目标后整场结束。`}</p>
       <button class="btn gold" id="settlementAction" data-action="${isMatchEnd?'new-match':'next-round'}" style="width:100%;margin-top:8px">${isMatchEnd?'再开一场':'下一局'}</button>`;
     openModal(isMatchEnd?'整场结算':`第 ${roundNumber} 局结算`,body,true,true);
     playGameCue(grand||fullRed?'special':'settle');
