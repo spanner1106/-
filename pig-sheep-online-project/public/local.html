@@ -498,6 +498,10 @@
   .tool:focus-visible,.btn:focus-visible,.demo-btn:focus-visible,.primary-action:focus-visible{outline:2px solid #fff0af;outline-offset:3px}
   @media(prefers-reduced-motion:reduce){.hand .card.deal-in,.player-play-layer .trick-slot .card.played-enter,.player-play-layer .trick-slot.winner .card{animation:none!important}}
 
+
+  /* 收牌展示框只显示牌面点数/字母；不显示花色，避免小牌中数字与花色重叠。 */
+  .capture-cards .mini-card .rank{inset:0!important;display:flex;align-items:center;justify-content:center;font-size:clamp(6px,.7vw,8px)!important;line-height:1!important;letter-spacing:-.2px!important;text-align:center;}
+  .capture-cards .mini-card.joker-card .rank{font-size:clamp(5.5px,.62vw,7px)!important;letter-spacing:0!important;}
 </style>
 </head>
 <body>
@@ -746,7 +750,7 @@
     const info=suits[card.suit];
     const label=specialIds[cardId(card)] || '';
     const title=`${cardLabel(card)}${label?`（${label}）`:''}`;
-    return `<div class="mini-card ${info.cls}${card.rank==='BJ'||card.rank==='SJ'?' joker-card':''}${freshIds.has(card.id)?' fresh':''}" title="${safeText(title)}"><span class="rank">${rankDisplay(card,true)}</span><span class="suit">${info.symbol}</span></div>`;
+    return `<div class="mini-card ${info.cls}${card.rank==='BJ'||card.rank==='SJ'?' joker-card':''}${freshIds.has(card.id)?' fresh':''}" title="${safeText(title)}"><span class="rank">${rankDisplay(card,true)}</span></div>`;
   }
   function renderCapture(playerKey, freshCards=[]){
     const player=players[playerKey];
