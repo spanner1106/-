@@ -1,0 +1,1317 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b2458" />
+<title>猪羊弟 · 本地单机试玩 V1.7（手感优化）</title>
+<style>
+  :root{
+    --blue-0:#071637; --blue-1:#0a2455; --blue-2:#16448b; --blue-3:#2f65b6;
+    --gold:#f4d28a; --gold-2:#bd8438; --ink:#17233c; --felt:#0d347b;
+    --white:#fffdf8; --red:#d32632; --black:#171b24;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;color:#fff;background:#06142f}
+  button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .app{position:relative;width:100vw;height:100dvh;min-height:360px;overflow:hidden;background:
+    radial-gradient(ellipse at 50% 45%,rgba(49,113,204,.52) 0%,rgba(18,60,134,.5) 30%,transparent 63%),
+    radial-gradient(ellipse at 50% -20%,#467aca 0%,#153e81 38%,#071b43 78%);
+  }
+  .app:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.25;background:
+    repeating-linear-gradient(130deg,transparent 0 3px,rgba(255,255,255,.06) 3px 4px),
+    radial-gradient(ellipse at 50% 50%,transparent 0 35%,rgba(3,14,42,.5) 82%);
+  }
+  .app:after{content:"";position:absolute;inset:10px;border:1px solid rgba(224,194,127,.42);border-radius:16px;box-shadow:inset 0 0 0 4px rgba(8,26,67,.38),inset 0 0 35px rgba(2,13,39,.5);pointer-events:none}
+  .mist{position:absolute;width:38vw;height:38vw;min-width:280px;min-height:280px;border-radius:50%;border:1px solid rgba(178,210,255,.08);left:31%;top:17%;box-shadow:0 0 0 18px rgba(179,210,255,.025),0 0 0 40px rgba(179,210,255,.02),0 0 0 80px rgba(179,210,255,.015);pointer-events:none}
+  .ornament{position:absolute;width:40%;height:65%;top:13%;opacity:.11;pointer-events:none;background:repeating-radial-gradient(ellipse at center,transparent 0 19px,rgba(194,218,255,.45) 20px 21px,transparent 22px 38px);mask-image:linear-gradient(to bottom,transparent,black 35%,transparent);}
+  .ornament.left{left:-22%;transform:rotate(24deg)}.ornament.right{right:-22%;transform:rotate(-24deg)}
+  .topbar{position:absolute;z-index:5;top:17px;left:3%;right:3%;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .brand-emblem{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;border:1px solid #f9df9e;color:#ffe4a6;font-size:20px;background:linear-gradient(145deg,#2e65ae,#102756);box-shadow:0 0 0 3px rgba(241,204,131,.12),inset 0 0 12px rgba(255,255,255,.18)}
+  .brand-copy{display:flex;align-items:baseline;gap:12px;white-space:nowrap}
+  .brand-title{font-size:clamp(16px,2vw,25px);font-weight:850;letter-spacing:2px;color:#ffe0a0;text-shadow:0 2px 10px #050e25}
+  .room-meta{font-size:clamp(10px,1.1vw,13px);color:#dce9ff;padding-left:12px;border-left:1px solid rgba(233,211,161,.32)}
+  .top-actions{display:flex;align-items:center;gap:clamp(7px,1.6vw,22px)}
+  .tool{background:none;border:0;color:#f5e8cc;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 4px;font-size:clamp(9px,1.1vw,12px);text-shadow:0 1px 4px #041432}
+  .tool .ico{width:32px;height:32px;border:1px solid rgba(244,212,138,.75);background:linear-gradient(145deg,rgba(67,115,184,.9),rgba(10,31,76,.9));border-radius:50%;display:grid;place-items:center;font-size:16px;box-shadow:0 0 12px rgba(29,105,218,.25),inset 0 1px 4px #ffffff40;position:relative}
+  .dot{position:absolute;right:-2px;top:-3px;width:8px;height:8px;background:#ff514c;border-radius:50%;box-shadow:0 0 0 2px #10305f}
+  .seat{position:absolute;z-index:3;display:flex;align-items:center;gap:9px;filter:drop-shadow(0 5px 6px #03102d70)}
+  .seat.north{top:14.5%;left:50%;transform:translateX(-50%);flex-direction:row;text-align:left;gap:8px}
+  .seat.west{top:40%;left:3.5%}.seat.east{top:40%;right:3.5%;flex-direction:row-reverse;text-align:right}
+  .seat.south{left:3.5%;bottom:22%;}
+  .avatar{width:clamp(43px,6.5vw,70px);height:clamp(43px,6.5vw,70px);border-radius:50%;position:relative;display:grid;place-items:center;flex:0 0 auto;background:radial-gradient(circle at 35% 25%,#a9d5ff,#477dc1 48%,#112957 75%);border:2px solid #f4d18b;box-shadow:0 0 0 3px #ffffff1b,0 0 0 5px #dcb66a35,inset 0 0 0 3px #19325b;color:white;font-size:clamp(20px,3vw,32px)}
+  .avatar.self{background:radial-gradient(circle at 35% 25%,#ffc8a3,#ba5e58 50%,#4a1f3d 78%)}
+  .lvl{position:absolute;right:-9px;bottom:-2px;font-size:10px;border-radius:5px;padding:2px 5px;background:linear-gradient(#357ac8,#163c7c);border:1px solid #b6dbff;color:#fff;box-shadow:0 2px 5px #07142e}
+  .seat-info{min-width:82px;padding:7px 10px;border:1px solid rgba(137,184,241,.32);border-radius:12px;background:linear-gradient(115deg,rgba(6,22,58,.9),rgba(23,61,117,.58));box-shadow:inset 0 1px 0 #ffffff14}
+  .seat-name{font-size:clamp(10px,1.2vw,14px);font-weight:750;white-space:nowrap;color:#f5f7ff}
+  .seat-state{font-size:10px;color:#9fc6ff;margin-top:2px;white-space:nowrap}
+  .seat-score{display:flex;align-items:center;gap:5px;margin-top:4px;color:#ffdc83;font-weight:800;font-size:clamp(11px,1.25vw,14px);white-space:nowrap}
+  /* Each player's captured hearts and special cards are shown in separate, live-updating rows. */
+  .capture-panel{position:absolute;z-index:6;width:clamp(145px,15vw,205px);padding:6px 7px 7px;border:1px solid rgba(137,184,241,.32);border-radius:10px;background:linear-gradient(125deg,rgba(4,19,49,.94),rgba(17,48,95,.86));box-shadow:0 7px 18px #020a2055,inset 0 1px 0 #ffffff13;backdrop-filter:blur(5px);color:#eaf2ff;transition:border-color .2s,box-shadow .2s}
+  .capture-panel.north{top:14.5%;left:calc(50% - 120px);transform:translateX(-100%);width:clamp(158px,15vw,205px)}
+  .capture-panel.west{top:51%;left:3.5%}
+  .capture-panel.east{top:51%;right:3.5%}
+  .capture-panel.south{left:2.5%;bottom:4%;width:clamp(145px,15vw,205px)}
+  .capture-panel.updated{border-color:rgba(169,218,255,.8);box-shadow:0 0 0 2px #5ca9ed22,0 7px 20px #020a2066,inset 0 1px 0 #ffffff18}
+  .capture-head{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:4px;color:#d9eaff;font-size:9px;font-weight:750;letter-spacing:0}
+  .capture-head>span:first-child{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .capture-head .live-tag{font-size:8px;font-weight:600;color:#83e5d7;background:#1e6b7555;border:1px solid #52c4bb55;border-radius:99px;padding:1px 4px;white-space:nowrap;flex:0 0 auto}
+  .capture-group+.capture-group{border-top:1px solid rgba(147,181,229,.17);margin-top:4px;padding-top:4px}
+  .capture-label{font-size:9px;color:#a9c9f4;margin-bottom:2px;display:flex;align-items:center;justify-content:space-between}
+  .capture-label .count{color:#e6eefc;font-variant-numeric:tabular-nums}
+  .capture-cards{display:flex;flex-wrap:wrap;align-items:flex-start;gap:2px;min-height:23px}
+  .capture-empty{font-size:8px;color:#7595c7;line-height:23px;white-space:nowrap}
+  .mini-card{position:relative;width:16px;height:21px;flex:0 0 16px;border-radius:3px;border:1px solid #dddeda;background:linear-gradient(135deg,#fffefa,#eeede8);color:#171b24;box-shadow:0 1px 3px #020b1e45,inset 1px 1px 0 #fff;overflow:hidden;user-select:none}
+  .mini-card .rank{position:absolute;left:2px;top:2px;font-size:7.5px;line-height:1;font-weight:850;letter-spacing:-.4px}
+  .mini-card .suit{position:absolute;right:2px;bottom:1px;font-size:9px;line-height:1}
+  .mini-card.red{color:#cc2633}.mini-card.black{color:#171b24}
+  .mini-card.joker-card .rank{font-size:5.5px;letter-spacing:0;left:1px;top:2px}
+  .card.joker-card .rank{left:2px;top:4px;width:calc(100% - 4px);font-size:clamp(8px,1vw,12px);letter-spacing:0;white-space:nowrap;text-align:center}
+  @media(max-width:700px){.card.joker-card .rank{font-size:8px}}
+  @media(orientation:landscape) and (max-height:520px){.card.joker-card .rank{font-size:8px;top:3px}}
+  .mini-card.fresh{animation:miniCardIn .28s ease-out both}
+  @keyframes miniCardIn{from{opacity:.15;transform:translateY(-5px) scale(.85)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .demo-controls{position:absolute;z-index:9;top:10.5%;left:3%;display:flex;align-items:center;gap:6px;flex-wrap:wrap;max-width:290px;padding:7px 8px;border:1px solid rgba(137,184,241,.26);border-radius:12px;background:rgba(5,21,53,.74);box-shadow:0 5px 16px #020a2038;backdrop-filter:blur(4px)}
+  .demo-title{font-size:10px;color:#bcd7ff;white-space:nowrap;padding:0 3px}
+  .demo-count{font-size:9px;color:#f5daa0;white-space:nowrap;padding:0 3px}
+  .demo-btn{border:1px solid #80c7ff;border-radius:8px;padding:6px 9px;background:linear-gradient(180deg,#56bafa,#1a75c9);color:white;font-size:10px;font-weight:800;box-shadow:0 2px 0 #104d83;white-space:nowrap}
+  .demo-btn.secondary{background:#0e2a56;border-color:#6888ba;color:#d9e8ff;box-shadow:none;font-weight:650}
+  .demo-btn:disabled{opacity:.55;cursor:default}
+  .coin{width:15px;height:15px;border-radius:50%;display:inline-grid;place-items:center;background:radial-gradient(circle at 30% 25%,#fff0a8,#e6a93d 56%,#86581c);border:1px solid #ffe8a5;color:#815321;font-size:9px;box-shadow:0 1px 3px #0007}
+  .center-stage{position:absolute;z-index:2;left:25%;right:25%;top:38%;height:32%;display:flex;align-items:center;justify-content:center;flex-direction:column}
+  .status-pill{display:flex;align-items:center;gap:9px;padding:8px 18px;border-radius:30px;border:1px solid #f3d38b;background:linear-gradient(180deg,#245493,#0b285a);box-shadow:0 3px 0 #6c4d2a,0 6px 16px #0004,inset 0 1px 4px #ffffff36;color:#eaf2ff;font-size:clamp(11px,1.4vw,15px);white-space:nowrap}
+  .status-pill strong{font-size:1.35em;color:#ffdd82}
+  .status-icon{font-size:19px;filter:drop-shadow(0 1px 2px #0008)}
+  .trick{display:flex;justify-content:center;align-items:center;min-height:clamp(88px,15vh,145px);margin-top:clamp(8px,2vh,18px);gap:clamp(0px,.3vw,4px);position:relative}
+  .trick-label{position:absolute;top:-17px;color:#b9d8ff;font-size:10px;letter-spacing:2px;white-space:nowrap;text-shadow:0 1px 4px #001334}
+  .card{position:relative;width:clamp(41px,6.3vw,72px);height:clamp(63px,15vh,124px);flex:0 0 auto;border-radius:7px;border:1px solid #e1e1dc;background:linear-gradient(135deg,#fffefa,#f1f0ea);color:var(--black);box-shadow:0 5px 9px #03133365,inset 1px 1px 1px #fff;user-select:none;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+  .card .rank{position:absolute;top:5px;left:5px;font-size:clamp(12px,1.8vw,19px);font-weight:850;line-height:.92;letter-spacing:-1px}
+  .card .suit{position:absolute;top:22px;left:5px;font-size:clamp(11px,1.65vw,17px);line-height:1}
+  .card .big{position:absolute;right:6px;bottom:3px;font-size:clamp(25px,4.4vw,45px);line-height:1;text-shadow:0 1px 0 #0001}
+  .red{color:#cc2633}.black{color:#161d2a}
+  .hand-area{position:absolute;z-index:4;left:59%;transform:translateX(-50%);bottom:3.2%;width:min(76%,1220px);display:flex;align-items:flex-end;flex-direction:column;gap:7px}
+  .hand-top{width:100%;display:flex;justify-content:space-between;align-items:center;padding:0 4px}
+  .hand-label{display:flex;align-items:center;gap:8px;font-weight:750;color:#e9f2ff;font-size:clamp(10px,1.25vw,14px);text-shadow:0 2px 4px #00122c}
+  .hand-count{font-size:10px;color:#c3d8f9;border:1px solid #6fa2e870;border-radius:99px;padding:3px 8px;background:#08214d8c}
+  .hand{width:100%;height:clamp(92px,21vh,165px);display:flex;justify-content:center;align-items:flex-end;padding-top:16px;isolation:isolate}
+  .hand .card{height:100%;width:clamp(48px,6.4vw,84px);margin-left:clamp(-16px,-1.2vw,-7px);flex:1 1 0;max-width:88px;min-width:0;cursor:pointer;transform-origin:bottom center}
+  .hand .card:first-child{margin-left:0}
+  .hand .card:hover{transform:translateY(-12px);z-index:20;box-shadow:0 10px 20px #020a1d95}
+  .hand .card.selected{transform:translateY(-24px);z-index:25;border:2px solid #ffdc83;box-shadow:0 0 0 2px #b17836,0 0 24px #ffd56f95,0 12px 22px #0008}
+  .hand .card .rank{top:6px;left:5px;font-size:clamp(12px,1.8vw,21px)}
+  .hand .card .suit{top:24px;left:5px;font-size:clamp(10px,1.4vw,16px)}
+  .hand .card .big{font-size:clamp(21px,4vw,44px);right:4px;bottom:4px}
+  .bottom-meta{position:absolute;z-index:4;bottom:4%;left:3.5%;display:flex;align-items:center;gap:7px;max-width:18%;color:#e3edff;font-size:11px}
+  .connection{display:flex;gap:3px;align-items:flex-end;height:15px}.connection i{width:3px;border-radius:4px;background:#42e1d7;display:block}.connection i:nth-child(1){height:5px}.connection i:nth-child(2){height:9px}.connection i:nth-child(3){height:13px}
+  .chat-button{position:absolute;z-index:7;right:3.2%;bottom:5%;border:1px solid #9ad8ff;border-radius:18px;padding:9px 17px;background:linear-gradient(180deg,#53c8ff,#147bd7);color:#fff;box-shadow:0 4px 0 #0b477f,0 6px 15px #00133265;display:flex;gap:8px;align-items:center;font-weight:800;font-size:clamp(11px,1.3vw,14px)}
+  .primary-action{position:absolute;z-index:8;left:auto;right:3.2%;bottom:15%;transform:none;border:1px solid #ffe4a0;border-radius:18px;padding:8px 26px;background:linear-gradient(180deg,#ffdc75,#df8a22);color:#57320f;font-weight:900;box-shadow:0 3px 0 #91571d,0 4px 12px #020c23a8;display:none}
+  .primary-action.show{display:block}
+  .toast{position:absolute;z-index:20;left:50%;top:36%;transform:translate(-50%,-10px);background:#061c45ed;border:1px solid #efd18d;border-radius:11px;padding:11px 17px;box-shadow:0 8px 30px #0008;color:#fff4d7;opacity:0;pointer-events:none;transition:.2s;white-space:nowrap;font-size:13px}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .modal-backdrop{display:none;position:absolute;inset:0;z-index:30;background:#020b208f;backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:20px}
+  /* Settlement must keep the table and captured cards sharp for manual result review. */
+  .modal-backdrop.clear-bg{background:rgba(2,11,32,.38);backdrop-filter:none}
+  .modal-backdrop.show{display:flex}
+  .modal{width:min(430px,92vw);border:1px solid #e8c77e;border-radius:18px;background:linear-gradient(145deg,#1d4b8b,#091e48);box-shadow:0 18px 50px #000a;padding:22px;color:#edf4ff}
+  .modal h2{margin:0 0 14px;font-size:22px;color:#f6d68f}.modal p{font-size:13px;line-height:1.8;color:#d1e1f9}.modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.btn{border:1px solid #adcaf0;border-radius:10px;padding:8px 14px;background:#214e8b;color:white}.btn.gold{background:linear-gradient(#ffe09a,#dc9736);border-color:#ffe9ae;color:#53300a;font-weight:800}
+  .chat-pop{position:absolute;right:3%;bottom:15%;z-index:12;width:220px;display:none;padding:13px;border:1px solid #d4bd80;border-radius:13px;background:#081d43ee;box-shadow:0 10px 25px #0007}.chat-pop.show{display:block}.chat-pop strong{color:#ffdb8a}.chat-pop p{margin:6px 0;font-size:12px;color:#e1ebff}.chat-pop input{margin-top:8px;width:100%;padding:8px;border-radius:7px;border:1px solid #7894c1;background:#102b57;color:white;outline:none}
+  .footer-note{position:absolute;right:4%;bottom:1.1%;font-size:9px;color:#abc7f1a8;z-index:3;letter-spacing:.5px}
+  @media(max-width:700px){
+    .topbar{top:13px;left:4%;right:4%}.brand-emblem{width:34px;height:34px}.brand-copy{display:block}.room-meta{display:block;border:0;padding:1px 0 0;font-size:9px}.top-actions{gap:5px}.tool .ico{width:27px;height:27px;font-size:13px}
+    .seat.north{top:14.5%;gap:5px}.seat.north .avatar{width:35px;height:35px;font-size:16px}.seat.north .seat-info{min-width:72px}.seat.west{top:40%;left:2%}.seat.east{top:40%;right:2%}.seat.south{bottom:25%;left:2%}.avatar{width:38px;height:38px;font-size:19px}.seat-info{padding:5px 7px;min-width:65px}.seat-name{font-size:10px}.seat-state{font-size:8px}.seat-score{font-size:10px;margin-top:2px}
+    .center-stage{left:23%;right:23%;top:39%;height:29%}.status-pill{padding:6px 10px;font-size:10px}.trick{margin-top:18px;min-height:75px}.card{width:35px;height:58px}.card .rank{font-size:12px;top:4px;left:4px}.card .suit{font-size:10px;top:18px;left:4px}.card .big{font-size:25px;right:4px}
+    .hand-area{bottom:7%;left:61%;width:74%;gap:5px}.hand{height:clamp(76px,18vh,118px)}.hand .card{margin-left:-11px;border-radius:5px;max-width:unset}.hand .card:first-child{margin-left:0}.hand .card .rank{font-size:clamp(10px,2.4vw,14px);left:3px;top:4px}.hand .card .suit{font-size:9px;left:3px;top:17px}.hand .card .big{font-size:clamp(17px,4vw,24px);bottom:3px;right:2px}
+    .capture-panel{padding:4px 5px 5px;width:clamp(118px,20vw,145px);border-radius:8px}
+    .capture-panel.north{top:14.5%;left:calc(50% - 75px);transform:translateX(-100%);width:clamp(116px,18vw,145px)}
+    .capture-panel.west{top:51%;left:1.5%}.capture-panel.east{top:51%;right:1.5%}
+    .capture-panel.south{left:1.5%;bottom:3%;width:clamp(118px,20vw,145px)}
+    .capture-head{font-size:8px;margin-bottom:3px}.capture-head .live-tag{font-size:7px}.capture-group+.capture-group{margin-top:3px;padding-top:3px}
+    .capture-label{font-size:8px;margin-bottom:2px}.capture-cards{gap:1px;min-height:18px}.capture-empty{line-height:18px;font-size:7px}
+    .mini-card{width:13px;height:17px;flex-basis:13px;border-radius:2px}.mini-card .rank{top:1px;left:1px;font-size:6px}.mini-card .suit{right:1px;bottom:0;font-size:7px}
+    .demo-controls{top:11%;left:2%;padding:5px;gap:4px;max-width:180px}.demo-title{display:none}.demo-btn{padding:5px 6px;font-size:9px}.demo-count{font-size:8px}
+    .bottom-meta{display:none}.chat-button{bottom:1.5%;right:3%;padding:6px 10px;border-radius:12px}.primary-action{bottom:14%;right:3%;padding:7px 17px}.footer-note{display:none}
+  }
+  @media(max-height:480px){.seat.south{bottom:39%;left:1.5%}.capture-panel.south{bottom:2%;}.seat.north{top:11%}.capture-panel.north{top:23%}.seat.west,.seat.east{top:38%}.center-stage{top:38%;height:25%}.trick{min-height:65px;margin-top:7px}.hand-area{bottom:2%;width:76%}.hand{height:29vh;min-height:82px;max-height:125px}.hand .card{min-height:0}.hand .card.selected{transform:translateY(-14px)}.seat.south{bottom:22%}.chat-button{bottom:3%}}
+  /* Landscape phone optimization: validated against 19.5:9, 20:9 and 16:9 phone viewports. */
+  @media (orientation:landscape) and (max-height:520px){
+    .app:after{inset:4px;border-radius:9px}
+    .topbar{top:max(5px,env(safe-area-inset-top));left:max(2%,env(safe-area-inset-left));right:max(2%,env(safe-area-inset-right));gap:6px}
+    .brand{gap:5px}
+    .brand-emblem{width:28px;height:28px;font-size:14px}
+    .brand-copy{display:flex;align-items:center}
+    .brand-title{font-size:15px;letter-spacing:1px}
+    .room-meta{display:none}
+    .top-actions{gap:4px}
+    .tool{font-size:8px;padding:0 2px}
+    .tool .ico{width:23px;height:23px;font-size:12px}
+    .tool>span:not(.ico){display:none}
+
+    .demo-controls{top:13%;left:max(2%,env(safe-area-inset-left));max-width:178px;padding:4px;gap:3px;border-radius:8px}
+    .demo-title{display:none}
+    .demo-btn{padding:4px 5px;font-size:8px;border-radius:6px}
+    .demo-count{font-size:8px;padding:0 2px}
+
+    .seat{gap:4px}
+    .seat.north{top:7%;left:50%;gap:4px}
+    .seat.north .avatar{width:31px;height:31px;font-size:15px}
+    .seat.north .lvl{font-size:8px;padding:1px 3px;right:-5px}
+    .seat.north .seat-info{min-width:82px;padding:4px 6px;border-radius:8px}
+    .seat.west{top:26%;left:max(1.5%,env(safe-area-inset-left))}
+    .seat.east{top:26%;right:max(1.5%,env(safe-area-inset-right))}
+    .seat.west .avatar,.seat.east .avatar{width:30px;height:30px;font-size:14px}
+    .seat.west .seat-state,.seat.east .seat-state{display:none}
+    .seat.west .seat-info,.seat.east .seat-info{min-width:76px;padding:3px 5px}
+    .seat.south{top:64%;bottom:auto;left:max(1.5%,env(safe-area-inset-left));gap:4px}
+    .seat.south .avatar{width:29px;height:29px;font-size:14px}
+    .seat.south .seat-info{min-width:76px;padding:3px 5px}
+    .seat.south .seat-state{display:none}
+    .seat.south .seat-info{padding:1px 4px;line-height:1}
+    .seat.south .seat-name,.seat.south .seat-score{line-height:1}
+    .seat-info{min-width:0;padding:3px 5px;border-radius:8px}
+    .seat-name{font-size:9px}
+    .seat-state{font-size:7px;margin-top:1px}
+    .seat-score{font-size:9px;margin-top:2px;gap:3px}
+    .coin{width:11px;height:11px;font-size:7px}
+
+    .capture-panel{padding:3px 4px 4px;width:clamp(112px,14vw,128px);border-radius:7px;backdrop-filter:blur(2px)}
+    .capture-panel.north{top:7%;left:calc(50% - 75px);transform:translateX(-100%);width:clamp(116px,15vw,136px)}
+    .capture-panel.west{top:36.5%;left:max(1.5%,env(safe-area-inset-left))}
+    .capture-panel.east{top:36.5%;right:max(1.5%,env(safe-area-inset-right))}
+    .capture-panel.south{top:auto;bottom:max(0px,env(safe-area-inset-bottom));left:max(1.5%,env(safe-area-inset-left));width:clamp(112px,14vw,128px)}
+    .capture-head{font-size:7px;line-height:1;margin-bottom:2px;letter-spacing:0;gap:2px}
+    .capture-head .live-tag{font-size:6px;line-height:1;padding:1px 2px}
+    .capture-group+.capture-group{margin-top:2px;padding-top:2px}
+    .capture-label{font-size:7px;line-height:1;margin-bottom:1px}
+    .capture-cards{display:flex;flex-wrap:nowrap;gap:0;min-height:15px;overflow:visible}
+    .capture-empty{font-size:6.5px;line-height:15px;white-space:nowrap}
+    .mini-card{width:11px;height:15px;flex:0 0 11px;border-radius:2px}
+    .mini-card+.mini-card{margin-left:-3.4px}
+    .mini-card .rank{left:1px;top:1px;font-size:6px;letter-spacing:-.5px}
+    .mini-card .suit{right:0;bottom:0;font-size:6.5px}
+
+    .center-stage{left:27%;right:27%;top:49%;height:23%}
+    .status-pill{gap:5px;padding:4px 8px;font-size:9px;border-radius:20px}
+    .status-icon{font-size:13px}
+    .trick{min-height:50px;margin-top:5px;gap:1px}
+    .trick-label{display:none}
+    .card{width:clamp(28px,4vw,36px);height:clamp(43px,12vh,52px);border-radius:4px}
+    .card .rank{top:3px;left:3px;font-size:10px;letter-spacing:-.5px}
+    .card .suit{top:14px;left:3px;font-size:8px}
+    .card .big{font-size:clamp(18px,3vw,25px);right:2px;bottom:2px}
+
+    .hand-area{left:60%;width:70%;bottom:2.5%;gap:0}
+    .hand-top{display:none}
+    .hand{height:clamp(62px,20vh,78px);min-height:0;max-height:none;padding-top:0;align-items:flex-end}
+    .hand .card{flex:0 0 clamp(36px,5.1vw,44px);width:clamp(36px,5.1vw,44px);height:100%;margin-left:-9px;max-width:none;border-radius:4px}
+    .hand .card:first-child{margin-left:0}
+    .hand .card .rank{font-size:clamp(9px,1.5vw,11px);left:2px;top:3px}
+    .hand .card .suit{font-size:8px;left:2px;top:14px}
+    .hand .card .big{font-size:clamp(17px,2.5vw,22px);right:2px;bottom:2px}
+    .hand .card.selected{transform:translateY(-9px)}
+
+    .bottom-meta,.footer-note,.chat-button{display:none}
+    .primary-action{bottom:22%;right:max(3%,env(safe-area-inset-right));padding:5px 12px;font-size:10px;border-radius:11px}
+    .chat-pop{right:3%;bottom:24%;width:min(220px,30vw);padding:9px}
+    .chat-pop p{font-size:10px}
+    .chat-pop input{padding:5px;font-size:10px}
+    .toast{top:48%;font-size:10px;padding:7px 10px;max-width:85vw;overflow:hidden;text-overflow:ellipsis}
+    .modal{padding:14px;max-height:90%;overflow:auto}
+    .modal h2{font-size:18px;margin-bottom:8px}
+    .modal p{font-size:11px;line-height:1.5}
+    .modal-foot{margin-top:8px}
+  }
+  @media (orientation:landscape) and (max-height:370px){
+    .seat.west,.seat.east{top:25%}
+    .capture-panel.west,.capture-panel.east{top:35.5%}
+    .seat.south{top:61.5%}
+    .mini-card{width:11px;height:14px;flex-basis:11px}
+    .mini-card .rank{font-size:5.5px}
+    .mini-card .suit{font-size:6.5px}
+    .capture-cards{min-height:12px}
+    .capture-empty{line-height:12px}
+    .capture-label{font-size:6.5px}
+    .capture-head{font-size:6.5px}
+    .mini-card{width:9px;height:12px;flex-basis:9px}
+    .mini-card+.mini-card{margin-left:-2.8px}
+    .mini-card .rank{font-size:5px}
+    .mini-card .suit{font-size:5.5px}
+  }
+  @media(orientation:portrait) and (max-width:600px){.rotate-hint{display:flex}}
+  .rotate-hint{display:none;position:absolute;z-index:40;inset:0;background:#081a3b;color:#f2d89b;align-items:center;justify-content:center;text-align:center;padding:30px;line-height:1.8}
+  .rotate-hint div{max-width:280px}.rotate-hint b{display:block;font-size:24px;margin-bottom:8px}
+  @media(orientation:portrait) and (max-width:600px){.rotate-hint{display:flex}}
+
+  /* V0.5: clearer trick layout, turn feedback, and always-visible action button. */
+  .seat{transition:filter .18s ease,opacity .18s ease}
+  .seat.active-turn .avatar{border-color:#fff0b8;box-shadow:0 0 0 3px #f8d98938,0 0 0 7px #f5d48a25,0 0 22px #f4c76766,inset 0 0 0 3px #19325b;animation:seatTurnPulse 1.8s ease-in-out infinite}
+  .seat.active-turn .seat-info{border-color:#e9ca82a8;background:linear-gradient(115deg,rgba(17,43,85,.96),rgba(30,74,130,.84))}
+  .seat.active-turn .seat-state{color:#ffe29b;font-weight:800}
+  .seat.last-winner .avatar{border-color:#ffe29a;box-shadow:0 0 0 3px #f8d98940,0 0 22px #ffd66d80,inset 0 0 0 3px #19325b}
+  .seat.last-winner .seat-state{color:#ffe29b;font-weight:800}
+  @keyframes seatTurnPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.15)}}
+  .center-stage{left:27%;right:27%;top:43%;height:34%;gap:0}
+  .status-pill{gap:7px;padding:6px 13px;font-size:clamp(10px,1.15vw,13px);min-height:31px}
+  .status-pill.complete{border-color:#a9e8c6;background:linear-gradient(180deg,#20684f,#0b3a36)}
+  .status-pill.complete strong{color:#b8ffd7}
+  .status-icon{font-size:15px}
+  .trick{width:min(100%,330px);height:clamp(76px,17vh,99px);min-height:0;margin-top:7px;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:4px;overflow:visible}
+  .trick-label{position:static;top:auto;text-align:center;font-size:9px;letter-spacing:1px;line-height:1.1;color:#d4e6ff;margin:0;text-shadow:0 1px 4px #001334}
+  .trick-slots{display:flex;justify-content:center;align-items:flex-end;gap:clamp(3px,.6vw,7px);width:100%;height:clamp(57px,13vh,72px)}
+  .trick-slot{position:relative;display:flex;flex:0 1 52px;min-width:0;height:100%;align-items:center;justify-content:flex-end;flex-direction:column;gap:2px;opacity:.8;transition:opacity .18s,transform .18s}
+  .trick-slot.played{opacity:1}
+  .trick-slot .slot-name{font-size:7px;color:#b9d4f5;white-space:nowrap;line-height:1;text-shadow:0 1px 4px #00102b}
+  .trick-slot.winner .slot-name{color:#ffe29b;font-weight:900}
+  .trick-slot .card{width:clamp(29px,3.8vw,36px);height:clamp(43px,11vh,51px);border-radius:4px;cursor:default;box-shadow:0 4px 10px #020b2470,inset 1px 1px 0 #fff}
+  .trick-slot .card .rank{top:3px;left:3px;font-size:10px;letter-spacing:-.4px}
+  .trick-slot .card .suit{top:14px;left:3px;font-size:8px}
+  .trick-slot .card .big{right:2px;bottom:2px;font-size:clamp(18px,2.5vw,23px)}
+  .trick-slot.winner .card{border-color:#ffe19a;box-shadow:0 0 0 1px #f4cd78,0 0 14px #ffd5687a,0 4px 10px #020b2470}
+  .card-back{position:relative;width:clamp(27px,3.6vw,33px);height:clamp(41px,10.5vh,48px);flex:0 0 auto;border-radius:4px;border:1px solid #9fc8ff;background:repeating-linear-gradient(45deg,#23569d 0 3px,#2e6ab0 3px 5px);box-shadow:0 3px 8px #020b2466,inset 0 0 0 2px #ffffff20;display:grid;place-items:center;color:#d6e8ff;font-size:8px;overflow:hidden}
+  .card-back:before{content:"◇";font-size:17px;color:#b8d6ff;text-shadow:0 0 5px #fff6}
+  .card-back.turn-target{border:1px dashed #f7d78b;background:rgba(12,44,92,.75);box-shadow:0 0 12px #f4d28a28;animation:targetPulse 1.5s ease-in-out infinite}
+  .card-back.turn-target:before{content:"你";font-size:11px;font-weight:900;color:#ffe4a4}
+  @keyframes targetPulse{0%,100%{opacity:.65}50%{opacity:1}}
+  .primary-action{display:block;bottom:29%;right:3.2%;padding:7px 18px;font-size:clamp(10px,1.15vw,13px);border-radius:14px;transition:filter .15s,transform .15s,opacity .15s}
+  .primary-action:disabled{opacity:.42;filter:saturate(.55);cursor:default;box-shadow:0 2px 0 #67421d}
+  .primary-action:not(:disabled){opacity:1;filter:none;animation:actionReady .28s ease-out both}
+  .primary-action:active:not(:disabled){transform:translateY(2px)}
+  @keyframes actionReady{from{filter:brightness(1.25);transform:scale(.96)}to{filter:brightness(1);transform:scale(1)}}
+  .hand .card:focus-visible{outline:2px solid #fff1a6;outline-offset:2px}
+  .hand .card:active{filter:brightness(1.04)}
+  .hand .card.selected{transform:translateY(-19px);border-color:#ffdc83;box-shadow:0 0 0 2px #b17836,0 0 20px #ffd56f80,0 10px 18px #0007}
+  .toast{max-width:min(80vw,420px);white-space:normal;text-align:center;line-height:1.35}
+  @media(max-width:700px){
+    .center-stage{left:27%;right:27%;top:43%;height:34%}
+    .status-pill{padding:5px 8px;font-size:9px;gap:4px}
+    .trick{height:clamp(72px,18vh,88px);margin-top:5px}
+    .trick-label{font-size:8px}
+    .trick-slots{gap:3px;height:clamp(54px,14vh,63px)}
+    .trick-slot{flex-basis:clamp(34px,5vw,45px)}
+    .trick-slot .slot-name{font-size:6.5px}
+    .trick-slot .card{width:clamp(26px,3.8vw,33px);height:clamp(39px,11vh,47px)}
+    .card-back{width:clamp(25px,3.5vw,30px);height:clamp(38px,10.5vh,44px)}
+    .primary-action{bottom:28%;right:2.5%;padding:6px 12px;font-size:10px;border-radius:11px}
+    .hand .card.selected{transform:translateY(-12px)}
+  }
+  @media(orientation:landscape) and (max-height:520px){
+    .center-stage{left:27%;right:27%;top:43%;height:34%}
+    .status-pill{min-height:26px;padding:4px 7px;font-size:8px;gap:4px}
+    .status-icon{font-size:12px}
+    .trick{height:clamp(64px,18vh,78px);margin-top:4px;gap:3px}
+    .trick-label{font-size:7px;letter-spacing:.5px}
+    .trick-slots{height:clamp(48px,13vh,55px);gap:2px}
+    .trick-slot{flex-basis:clamp(28px,4vw,36px);gap:2px}
+    .trick-slot .slot-name{font-size:6px}
+    .trick-slot .card{width:clamp(24px,3.5vw,30px);height:clamp(35px,10.5vh,42px)}
+    .trick-slot .card .rank{top:2px;left:2px;font-size:8px}
+    .trick-slot .card .suit{top:11px;left:2px;font-size:7px}
+    .trick-slot .card .big{font-size:17px;right:1px;bottom:1px}
+    .card-back{width:clamp(23px,3.2vw,28px);height:clamp(34px,10vh,39px)}
+    .card-back:before{font-size:14px}
+    .primary-action{bottom:28%;right:max(2.5%,env(safe-area-inset-right));padding:5px 11px;font-size:9px;border-radius:10px}
+    .hand .card.selected{transform:translateY(-9px)}
+  }
+  @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+
+  /* Final visual balance pass: richer tabletop, larger readable trick cards, desktop hand spacing. */
+  .table-rim{position:absolute;z-index:0;left:1.5%;right:1.5%;top:15%;height:82%;border-radius:50%/40%;border:2px solid rgba(232,190,104,.78);background:linear-gradient(135deg,#6a4b35 0%,#b5844d 13%,#4f382d 26%,#b6874d 51%,#382c2b 73%,#b17e42 100%);box-shadow:0 8px 25px #02091d9c,inset 0 0 0 3px rgba(24,24,39,.55),inset 0 0 18px #f3cd8150;pointer-events:none}
+  .table-rim:before{content:"";position:absolute;inset:8px;border-radius:inherit;border:1px solid rgba(229,203,144,.72);background:radial-gradient(ellipse at 50% 40%,rgba(63,124,204,.58),transparent 58%),radial-gradient(ellipse at 50% 50%,#174d91 0%,#0d3675 62%,#09275a 100%);box-shadow:inset 0 0 0 2px rgba(7,27,66,.6),inset 0 0 32px #031638a6}
+  .table-rim:after{content:"";position:absolute;inset:18px;border-radius:inherit;border:1px solid rgba(176,212,255,.13);background:repeating-radial-gradient(ellipse at center,transparent 0 28px,rgba(188,219,255,.055) 29px 30px,transparent 31px 54px);}
+  .app>.mist{z-index:0;opacity:.45}
+  .app>.ornament{z-index:0;opacity:.14}
+  .hand-area{left:50%;width:min(72%,1100px)}
+  .trick-slot .winner-tag{position:absolute;top:0;right:-4px;z-index:3;padding:2px 3px;border-radius:5px;background:#d9ab50;color:#452b11;font-size:6px;line-height:1;font-weight:900;box-shadow:0 1px 4px #020b2470}
+  .trick-slot.current-turn .slot-name{color:#ffe4a4;font-weight:900}
+  .trick-slot .card{width:clamp(31px,4vw,36px);height:clamp(44px,11.5vh,50px)}
+  .primary-action{min-width:52px;min-height:28px}
+  @media(max-width:700px){.hand-area{left:60%;width:70%}}
+  @media(orientation:landscape) and (max-height:520px){
+    .center-stage{left:26%;right:26%;top:41.5%;height:35%}
+    .trick{height:clamp(72px,19vh,83px);margin-top:5px}
+    .trick-slots{height:clamp(58px,15vh,62px);gap:3px}
+    .trick-slot{flex-basis:clamp(34px,4.5vw,43px)}
+    .trick-slot .card{width:clamp(29px,4.2vw,36px);height:clamp(43px,11.5vh,48px)}
+    .trick-slot .card .rank{top:2px;left:3px;font-size:9px}
+    .trick-slot .card .suit{top:12px;left:3px;font-size:7px}
+    .trick-slot .card .big{font-size:18px;right:2px;bottom:2px}
+    .card-back{width:clamp(28px,3.9vw,33px);height:clamp(42px,11vh,46px)}
+    .primary-action{bottom:28%;min-width:54px;min-height:29px;padding:5px 12px}
+    .hand-area{left:60%;width:70%}
+  }
+  @media(min-width:1000px) and (min-height:600px){
+    .hand-area{left:55%;width:min(68%,1000px)}
+    .center-stage{left:30%;right:30%;top:41.5%;height:34%}
+    .status-pill{font-size:14px;padding:8px 17px;gap:9px}
+    .trick{width:min(100%,430px);height:clamp(112px,17vh,145px);margin-top:10px;gap:8px}
+    .trick-label{font-size:11px;letter-spacing:1.4px}
+    .trick-slots{height:clamp(90px,13vh,102px);gap:12px}
+    .trick-slot{flex-basis:70px;gap:4px}
+    .trick-slot .slot-name{font-size:10px}
+    .trick-slot .card{width:clamp(47px,4.2vw,56px);height:clamp(70px,10.5vh,82px);border-radius:7px}
+    .trick-slot .card .rank{top:5px;left:5px;font-size:15px}
+    .trick-slot .card .suit{top:23px;left:5px;font-size:12px}
+    .trick-slot .card .big{font-size:34px;right:4px;bottom:3px}
+    .card-back{width:47px;height:70px;border-radius:6px}
+    .card-back:before{font-size:25px}
+    .trick-slot .winner-tag{top:1px;right:0;font-size:8px;padding:3px 5px}
+    .hand-area{left:55%;width:min(68%,1000px)}
+    .primary-action{right:3.2%;bottom:27%;padding:10px 25px;font-size:14px;min-width:84px;min-height:42px;border-radius:16px}
+  }
+
+
+  /* V0.6: anchor each played card in front of its owner's compass seat. */
+  .center-stage .trick{height:auto;min-height:0;margin-top:9px;overflow:visible;align-items:center}
+  .center-stage .trick-label{padding:4px 11px;border:1px solid #9ec9ff4a;border-radius:99px;background:#092557b8;font-size:clamp(8px,.9vw,11px);letter-spacing:.4px;box-shadow:0 3px 10px #020c2650}
+  .player-play-layer{position:absolute;inset:0;z-index:4;pointer-events:none}
+  .player-play-layer .trick-slot{position:absolute;display:flex;align-items:center;justify-content:flex-start;flex-direction:column;gap:3px;width:clamp(38px,5.2vw,58px);height:auto;min-width:0;opacity:.88;transform:none;pointer-events:none}
+  .player-play-layer .trick-slot.played{opacity:1}
+  .player-play-layer .trick-slot .slot-name{font-size:clamp(7px,.8vw,10px);line-height:1.1;padding:2px 5px;border-radius:99px;background:#071d48bf;border:1px solid #9ac7fb50;color:#d7e8ff;text-shadow:0 1px 3px #00102b;white-space:nowrap}
+  .player-play-layer .trick-slot .card-back{width:clamp(29px,3.7vw,42px);height:clamp(43px,10vh,59px)}
+  .player-play-layer .trick-slot .card{width:clamp(31px,4vw,46px);height:clamp(47px,11vh,65px);border-radius:5px}
+  .player-play-layer .trick-slot .card .rank{top:4px;left:4px;font-size:clamp(9px,1.1vw,13px)}
+  .player-play-layer .trick-slot .card .suit{top:18px;left:4px;font-size:clamp(8px,.9vw,11px)}
+  .player-play-layer .trick-slot .card .big{right:3px;bottom:2px;font-size:clamp(21px,2.4vw,31px)}
+  .player-play-layer .trick-slot.north{left:50%;top:24%;transform:translateX(-50%)}
+  .player-play-layer .trick-slot.west{left:25%;top:46%;transform:translate(-50%,-50%)}
+  .player-play-layer .trick-slot.east{left:75%;top:46%;transform:translate(-50%,-50%)}
+  .player-play-layer .trick-slot.south{left:38%;top:63%;transform:translate(-50%,-50%)}
+  .player-play-layer .trick-slot.north .slot-name{order:0}
+  .player-play-layer .trick-slot.north .card,.player-play-layer .trick-slot.north .card-back{order:1}
+  .player-play-layer .trick-slot.south .slot-name{order:0}
+  .player-play-layer .trick-slot.south .card,.player-play-layer .trick-slot.south .card-back{order:1}
+  .player-play-layer .trick-slot.winner .slot-name{color:#ffe29b;border-color:#e8c16f;background:#4a381dcc}
+  .player-play-layer .trick-slot.winner .card{border-color:#ffe19a;box-shadow:0 0 0 1px #f4cd78,0 0 14px #ffd5687a,0 4px 10px #020b2470}
+  .player-play-layer .trick-slot .winner-tag{top:auto;right:auto;bottom:-12px;font-size:7px;padding:2px 5px;border-radius:99px;white-space:nowrap}
+  .player-play-layer .trick-slot.current-turn .card-back{border-color:#ffe19a;box-shadow:0 0 0 2px #f4d28a28,0 0 14px #f4d28a30;animation:targetPulse 1.5s ease-in-out infinite}
+  .hand .card{touch-action:manipulation;user-select:none;-webkit-user-select:none}
+  @media(max-width:700px){
+    .player-play-layer .trick-slot{width:clamp(31px,5vw,43px);gap:2px}
+    .player-play-layer .trick-slot .slot-name{font-size:6.5px;padding:2px 4px}
+    .player-play-layer .trick-slot .card{width:clamp(27px,4vw,34px);height:clamp(40px,10.5vh,48px)}
+    .player-play-layer .trick-slot .card .rank{top:3px;left:3px;font-size:9px}
+    .player-play-layer .trick-slot .card .suit{top:13px;left:3px;font-size:7px}
+    .player-play-layer .trick-slot .card .big{font-size:18px;right:2px;bottom:2px}
+    .player-play-layer .trick-slot .card-back{width:clamp(25px,3.5vw,30px);height:clamp(37px,9.5vh,44px)}
+    .player-play-layer .trick-slot.north{top:20.5%}
+    .player-play-layer .trick-slot.west{left:27%;top:46%}
+    .player-play-layer .trick-slot.east{left:73%;top:46%}
+    .player-play-layer .trick-slot.south{left:39%;top:62%}
+  }
+  @media(orientation:landscape) and (max-height:520px){
+    .center-stage{left:36%;right:36%;top:39%;height:22%;justify-content:center}
+    .status-pill{max-width:100%;padding:4px 7px;gap:3px;font-size:8px;min-height:23px}
+    .center-stage .trick{margin-top:4px}
+    .center-stage .trick-label{padding:2px 7px;font-size:7px}
+    .player-play-layer .trick-slot{width:clamp(28px,4.1vw,36px);gap:2px}
+    .player-play-layer .trick-slot .slot-name{font-size:6px;padding:1px 3px}
+    .player-play-layer .trick-slot .card{width:clamp(26px,3.5vw,32px);height:clamp(38px,10vh,44px);border-radius:4px}
+    .player-play-layer .trick-slot .card .rank{top:2px;left:2px;font-size:8px}
+    .player-play-layer .trick-slot .card .suit{top:11px;left:2px;font-size:6px}
+    .player-play-layer .trick-slot .card .big{font-size:17px;right:1px;bottom:1px}
+    .player-play-layer .trick-slot .card-back{width:clamp(23px,3vw,28px);height:clamp(34px,9vh,39px)}
+    .player-play-layer .trick-slot.north{top:21%}
+    .player-play-layer .trick-slot.west{left:27%;top:44%}
+    .player-play-layer .trick-slot.east{left:73%;top:44%}
+    .player-play-layer .trick-slot.south{left:39%;top:61%}
+    .player-play-layer .trick-slot .winner-tag{bottom:-10px;font-size:6px}
+  }
+  @media(orientation:landscape) and (max-height:370px){
+    .player-play-layer .trick-slot.north{top:20%}
+    .player-play-layer .trick-slot.west,.player-play-layer .trick-slot.east{top:43%}
+    .player-play-layer .trick-slot.south{top:60%}
+    .player-play-layer .trick-slot .card{height:35px;width:23px}
+    .player-play-layer .trick-slot .card-back{height:33px;width:22px}
+  }
+
+
+  /* V0.7: enlarge each played card in front of its owner for easier identification. */
+  .player-play-layer .trick-slot{width:clamp(48px,5.8vw,68px);gap:4px}
+  .player-play-layer .trick-slot .slot-name{font-size:clamp(8px,.9vw,11px);padding:3px 6px}
+  .player-play-layer .trick-slot .card{width:clamp(42px,4.5vw,56px);height:clamp(62px,11.5vh,80px);border-radius:6px}
+  .player-play-layer .trick-slot .card .rank{top:4px;left:4px;font-size:clamp(11px,1.25vw,15px)}
+  .player-play-layer .trick-slot .card .suit{top:19px;left:4px;font-size:clamp(9px,1vw,12px)}
+  .player-play-layer .trick-slot .card .big{right:3px;bottom:2px;font-size:clamp(27px,2.8vw,36px)}
+  .player-play-layer .trick-slot .card-back{width:clamp(38px,4.3vw,53px);height:clamp(56px,10.8vh,75px);border-radius:6px}
+  .player-play-layer .trick-slot .card-back:before{font-size:clamp(20px,2vw,28px)}
+  @media(max-width:700px){
+    .player-play-layer .trick-slot{width:clamp(38px,5.4vw,46px);gap:3px}
+    .player-play-layer .trick-slot .slot-name{font-size:7px;padding:2px 4px}
+    .player-play-layer .trick-slot .card{width:clamp(33px,5vw,38px);height:clamp(49px,13.3vh,55px);border-radius:5px}
+    .player-play-layer .trick-slot .card .rank{top:3px;left:3px;font-size:10px}
+    .player-play-layer .trick-slot .card .suit{top:14px;left:3px;font-size:7px}
+    .player-play-layer .trick-slot .card .big{right:2px;bottom:2px;font-size:clamp(21px,3vw,25px)}
+    .player-play-layer .trick-slot .card-back{width:clamp(33px,4.8vw,37px);height:clamp(49px,12.5vh,53px)}
+    .player-play-layer .trick-slot .card-back:before{font-size:18px}
+  }
+  @media(orientation:landscape) and (max-height:520px){
+    .player-play-layer .trick-slot{width:clamp(39px,5.1vw,46px);gap:3px}
+    .player-play-layer .trick-slot .slot-name{font-size:7px;padding:2px 4px}
+    .player-play-layer .trick-slot .card{width:clamp(33px,4.5vw,39px);height:clamp(48px,13vh,54px);border-radius:5px}
+    .player-play-layer .trick-slot .card .rank{top:3px;left:3px;font-size:9px}
+    .player-play-layer .trick-slot .card .suit{top:13px;left:3px;font-size:7px}
+    .player-play-layer .trick-slot .card .big{right:2px;bottom:2px;font-size:22px}
+    .player-play-layer .trick-slot .card-back{width:clamp(30px,4vw,34px);height:clamp(44px,11.5vh,48px)}
+    .player-play-layer .trick-slot .card-back:before{font-size:16px}
+  }
+  @media(orientation:landscape) and (max-height:370px){
+    .player-play-layer .trick-slot{width:clamp(30px,4.4vw,34px)}
+    .player-play-layer .trick-slot .card{width:clamp(27px,4.2vw,31px);height:clamp(39px,11vh,41px)}
+    .player-play-layer .trick-slot .card .rank{font-size:8px;top:2px;left:2px}
+    .player-play-layer .trick-slot .card .suit{font-size:6px;top:10px;left:2px}
+    .player-play-layer .trick-slot .card .big{font-size:17px;right:1px;bottom:1px}
+    .player-play-layer .trick-slot .card-back{width:25px;height:37px}
+  }
+
+
+  .hand .card.illegal{opacity:.46;filter:saturate(.55);cursor:not-allowed}
+  .settle-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:11px;min-width:350px}
+  .settle-table th,.settle-table td{padding:7px 5px;text-align:center;border-bottom:1px solid #ffffff22;white-space:nowrap}
+  .settle-table th{color:#ffe29b;background:#ffffff0b}
+  .settle-table td:first-child{text-align:left}
+  @media(orientation:landscape) and (max-height:520px){.settle-table{font-size:10px}.settle-table th,.settle-table td{padding:5px 4px}}
+
+
+  /* V1.7 feel polish: one-shot deal/play animations, clear winner feedback, and capture confirmation. */
+  @keyframes handDealIn {
+    0%{opacity:0;transform:translateY(18px) scale(.94);filter:brightness(1.25)}
+    72%{opacity:1;transform:translateY(-2px) scale(1.01);filter:brightness(1.04)}
+    100%{opacity:1;transform:translateY(0) scale(1);filter:none}
+  }
+  .hand .card.deal-in{animation:handDealIn .28s cubic-bezier(.2,.75,.25,1) both}
+  @keyframes cardDropIn {
+    0%{opacity:.1;transform:translateY(14px) scale(.86) rotate(2deg);filter:brightness(1.22)}
+    68%{opacity:1;transform:translateY(-2px) scale(1.035) rotate(-.5deg)}
+    100%{opacity:1;transform:translateY(0) scale(1) rotate(0);filter:none}
+  }
+  .player-play-layer .trick-slot .card.played-enter{animation:cardDropIn .24s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes winnerReveal {
+    0%{filter:brightness(1);transform:scale(1)}
+    35%{filter:brightness(1.24);transform:scale(1.07)}
+    100%{filter:brightness(1);transform:scale(1)}
+  }
+  .player-play-layer .trick-slot.winner .card{animation:winnerReveal .55s ease-out 1}
+  .capture-panel.updated .capture-head{color:#fff0c8;text-shadow:0 0 7px #8ec9ff66}
+  .status-pill{transition:background .18s,border-color .18s,box-shadow .18s}
+  .status-pill:not(.complete){box-shadow:0 3px 0 #6c4d2a,0 6px 16px #0004,inset 0 1px 4px #ffffff36}
+  .tool:focus-visible,.btn:focus-visible,.demo-btn:focus-visible,.primary-action:focus-visible{outline:2px solid #fff0af;outline-offset:3px}
+  @media(prefers-reduced-motion:reduce){.hand .card.deal-in,.player-play-layer .trick-slot .card.played-enter,.player-play-layer .trick-slot.winner .card{animation:none!important}}
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="table-rim" aria-hidden="true"></div>
+  <div class="mist"></div><div class="ornament left"></div><div class="ornament right"></div>
+  <header class="topbar">
+    <div class="brand"><div class="brand-emblem">♠</div><div class="brand-copy"><div class="brand-title">猪羊弟</div><div class="room-meta">重庆猪羊一家拱猪　·　本地单机</div></div></div>
+    <nav class="top-actions">
+      <button class="tool" id="soundBtn"><span class="ico">♫</span><span>音效</span></button>
+      <button class="tool" id="chatTopBtn"><span class="ico">☏<i class="dot"></i></span><span>聊天</span></button>
+      <button class="tool" id="settingsBtn"><span class="ico">⚙</span><span>设置</span></button>
+      <button class="tool" id="helpBtn"><span class="ico">?</span><span>规则</span></button>
+    </nav>
+  </header>
+
+  <section class="demo-controls" aria-label="游戏控制">
+    <span class="demo-title">单机试玩</span>
+    <button class="demo-btn" id="newMatchBtn" type="button">新开整场</button>
+    <span class="demo-count" id="roundMeta">第 1 局 · 第 1 墩</span>
+    <span class="demo-count" id="targetMeta">目标 50 点</span>
+  </section>
+
+  <section class="seat north" aria-label="北家玩家">
+    <div class="avatar">🦊<span class="lvl">17</span></div>
+    <div class="seat-info"><div class="seat-name">清风徐来</div><div class="seat-state" id="northState">本局先手 · 任意牌领出</div><div class="seat-score"><span class="coin">¥</span><span>累计 <b id="northPoints">0</b> 点</span></div></div>
+  </section>
+  <section class="seat west" aria-label="西家玩家">
+    <div class="avatar">🐼<span class="lvl">16</span></div>
+    <div class="seat-info"><div class="seat-name">落花有意</div><div class="seat-state">等待出牌</div><div class="seat-score"><span class="coin">¥</span><span>累计 <b id="westPoints">0</b> 点</span></div></div>
+  </section>
+  <section class="seat east" aria-label="东家玩家">
+    <div class="avatar">🐯<span class="lvl">18</span></div>
+    <div class="seat-info"><div class="seat-name">晴空万里</div><div class="seat-state">等待出牌</div><div class="seat-score"><span class="coin">¥</span><span>累计 <b id="eastPoints">0</b> 点</span></div></div>
+  </section>
+  <section class="seat south" aria-label="本家玩家">
+    <div class="avatar self">🐉<span class="lvl">你</span></div>
+    <div class="seat-info"><div class="seat-name">我的座位</div><div class="seat-state" id="selfState">请跟出梅花</div><div class="seat-score"><span class="coin">★</span><span>累计 <b id="southPoints">0</b> 点</span></div></div>
+  </section>
+
+  <section class="capture-panel north" data-player="north" aria-label="上家收集到的红桃和特殊牌">
+    <div class="capture-head"><span>收牌 · 北家</span><span class="live-tag">实时</span></div>
+    <div class="capture-group"><div class="capture-label"><span>红桃</span><span class="count" id="northHeartCount">0 张</span></div><div class="capture-cards" id="northHearts"></div></div>
+    <div class="capture-group"><div class="capture-label"><span>特殊牌</span><span class="count" id="northSpecialCount">0 张</span></div><div class="capture-cards" id="northSpecials"></div></div>
+  </section>
+  <section class="capture-panel west" data-player="west" aria-label="西家收集到的红桃和特殊牌">
+    <div class="capture-head"><span>收牌 · 西家</span><span class="live-tag">实时</span></div>
+    <div class="capture-group"><div class="capture-label"><span>红桃</span><span class="count" id="westHeartCount">0 张</span></div><div class="capture-cards" id="westHearts"></div></div>
+    <div class="capture-group"><div class="capture-label"><span>特殊牌</span><span class="count" id="westSpecialCount">0 张</span></div><div class="capture-cards" id="westSpecials"></div></div>
+  </section>
+  <section class="capture-panel east" data-player="east" aria-label="东家收集到的红桃和特殊牌">
+    <div class="capture-head"><span>收牌 · 东家</span><span class="live-tag">实时</span></div>
+    <div class="capture-group"><div class="capture-label"><span>红桃</span><span class="count" id="eastHeartCount">0 张</span></div><div class="capture-cards" id="eastHearts"></div></div>
+    <div class="capture-group"><div class="capture-label"><span>特殊牌</span><span class="count" id="eastSpecialCount">0 张</span></div><div class="capture-cards" id="eastSpecials"></div></div>
+  </section>
+  <section class="capture-panel south" data-player="south" aria-label="本家收集到的红桃和特殊牌">
+    <div class="capture-head"><span>收牌 · 本家</span><span class="live-tag">实时</span></div>
+    <div class="capture-group"><div class="capture-label"><span>红桃</span><span class="count" id="southHeartCount">0 张</span></div><div class="capture-cards" id="southHearts"></div></div>
+    <div class="capture-group"><div class="capture-label"><span>特殊牌</span><span class="count" id="southSpecialCount">0 张</span></div><div class="capture-cards" id="southSpecials"></div></div>
+  </section>
+
+  <main class="center-stage">
+    <div class="status-pill" id="statusPill"><span class="status-icon" id="statusIcon">◷</span><span id="statusText">轮到你跟牌 · 领出梅花 2</span><strong id="timer">18</strong><span id="timerUnit">秒</span></div>
+    <div class="trick" id="trick">
+      <div class="trick-label" id="trickLabel">第 1 墩 · 2 / 4 已出</div>
+    </div>
+  </main>
+  <div class="player-play-layer" id="trickSlots" aria-label="四名玩家各自位置前方的出牌展示区"></div>
+
+  <div class="bottom-meta"><span class="connection"><i></i><i></i><i></i></span><span>连接稳定</span><span style="opacity:.45">|</span><span id="handMeta">手牌 13 张</span></div>
+  <section class="hand-area">
+    <div class="hand-top"><div class="hand-label"><span>♧</span> 我的手牌 <span class="hand-count" id="handCount">13 张</span></div><div class="hand-count">点击手牌选择</div></div>
+    <div class="hand" id="hand" aria-label="我的手牌"></div>
+  </section>
+  <button class="primary-action" id="playBtn" type="button" disabled>出牌</button>
+  <button class="chat-button" id="chatBtn"><span>☏</span> 聊天</button>
+  <div class="footer-note" id="footerNote">本地单机 · 三家机器人 · 出牌音效</div>
+  <div class="toast" id="toast"></div>
+  <div class="chat-pop" id="chatPop"><strong>牌桌聊天</strong><p>清风徐来：大家好！</p><p>晴空万里：开始吧～</p><input id="chatInput" placeholder="输入消息（演示）" /></div>
+  <div class="modal-backdrop" id="modalBackdrop"><div class="modal"><h2 id="modalTitle">游戏规则</h2><div id="modalBody"></div><div class="modal-foot"><button class="btn" id="closeModal">关闭</button><button class="btn gold" id="modalOk">知道了</button></div></div></div>
+  <div class="rotate-hint"><div><b>请横屏体验</b>《猪羊弟》的牌桌为横屏布局。请旋转设备，以获得更舒适的出牌体验。</div></div>
+</div>
+<script>
+(() => {
+  'use strict';
+  const suits = {
+    S:{symbol:'♠',cls:'black',name:'黑桃'},
+    H:{symbol:'♥',cls:'red',name:'红桃'},
+    D:{symbol:'♦',cls:'red',name:'方块'},
+    C:{symbol:'♣',cls:'black',name:'梅花'}
+  };
+  const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+  const rankOrder = Object.fromEntries(ranks.map((r,i)=>[r,i+2]));
+  // Jokers count as hearts for following suit, ranking, and the full-red hand.
+  rankOrder.SJ = 15; // 小王 > 红桃A
+  rankOrder.BJ = 16; // 大王 > 小王
+  const suitOrder = {S:0,H:1,C:2,D:3};
+  const players = {
+    north:{key:'north',name:'清风徐来',avatar:'🦊',hand:[],captured:[],points:0,tricks:0},
+    west:{key:'west',name:'落花有意',avatar:'🐼',hand:[],captured:[],points:0,tricks:0},
+    east:{key:'east',name:'晴空万里',avatar:'🐯',hand:[],captured:[],points:0,tricks:0},
+    south:{key:'south',name:'我的座位',avatar:'🐉',hand:[],captured:[],points:0,tricks:0}
+  };
+  // Counter-clockwise order from the north seat: north -> west -> south -> east.
+  const turnOrder = ['north','west','south','east'];
+  const visualOrder = ['north','west','east','south'];
+  const captureNames = Object.fromEntries(Object.entries(players).map(([key,p])=>[key,p.name]));
+  const seatNames = {north:'北家',west:'西家',south:'本家',east:'东家'};
+  const specialIds = {'S-Q':'猪','D-J':'羊','C-10':'倒板'};
+  const DOUBLE_TAP_MS = 560;
+  const BOT_DELAY_MS = 650;
+  const TRICK_REVEAL_MS = 1050;
+  const $ = id => document.getElementById(id);
+  function readPref(key, fallback){try{const value=localStorage.getItem(`pigSheep.${key}`);return value===null?fallback:value;}catch(_){return fallback;}}
+  function writePref(key, value){try{localStorage.setItem(`pigSheep.${key}`,String(value));}catch(_){}}
+
+  let selected = null;
+  let lastTappedCardId = null;
+  let lastTappedAt = 0;
+  let cards = players.south.hand;
+  let turnIndex = 0;
+  let currentTurn = 'north';
+  let leader = 'north';
+  let leadSuit = null;
+  let trickCount = 1;
+  let roundNumber = 1;
+  let matchTargetPoint = 50;
+  let tablePlays = {north:null,west:null,east:null,south:null};
+  // 本局队伍在发牌完成时固定：根据初始手牌中猪、羊的持有者判定。
+  // 后续谁赢走猪/羊，只影响收牌和牌面分，不改变本局队伍。
+  let roundPigOwner = null;
+  let roundSheepOwner = null;
+  // AI只保存自己发牌时是否持猪/羊，以及牌打到桌面后公开的信息，不读取他人隐藏手牌。
+  let aiInitialSpecials = {};
+  let publicSpecialOwners = {pig:null,sheep:null};
+  // 已公开打出的牌全部记入记牌表；机器人只用自己手牌和公开历史估算剩余牌。
+  let publicSeenIds = new Set();
+  let trickWinner = null;
+  let mode = 'play'; // play | resolving | settlement | matchEnd
+  let soundOn = readPref('soundOn','true') !== 'false';
+  const initialVolume = Number(readPref('soundVolume','0.68'));
+  let soundVolume = Number.isFinite(initialVolume) ? Math.max(0,Math.min(1,initialVolume)) : 0.68;
+  let dealAnimationUntil = 0;
+  let lastPlayedPlayer = null;
+  let lastPlayedCardId = null;
+  let lastPlayAnimationUntil = 0;
+  const recentCaptureAnimations = new Map();
+  let audioContext = null;
+  let soundMasterGain = null;
+  let modalSticky = false;
+  let botTimer = null;
+  let trickTimer = null;
+  let userTurnTimer = null;
+  let secondsLeft = 30;
+
+  function rankValue(rank){ return rankOrder[rank] || 0; }
+  function cardId(card){ return `${card.suit}-${card.rank}`; }
+  function createDeck(){
+    const deck=[];
+    for(const suit of ['S','H','D','C']){
+      for(const rank of ranks){
+        // Remove 2♥ and 3♥; the two jokers join the heart suit instead.
+        if(suit==='H' && (rank==='2'||rank==='3')) continue;
+        deck.push({id:`${suit}-${rank}`,suit,rank});
+      }
+    }
+    deck.push({id:'H-BJ',suit:'H',rank:'BJ'});
+    deck.push({id:'H-SJ',suit:'H',rank:'SJ'});
+    return deck;
+  }
+  function shuffle(deck){
+    for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
+    return deck;
+  }
+  function sortHand(hand){hand.sort((a,b)=>(suitOrder[a.suit]-suitOrder[b.suit])||(rankValue(b.rank)-rankValue(a.rank)));}
+  function cardScore(card){
+    const id=cardId(card);
+    if(id==='S-Q') return -100;
+    if(id==='D-J') return 100;
+    // 倒板不作为普通基础牌分直接计入；是否给 +50 由结算时是否有其他计分牌决定。
+    if(id==='C-10') return 0;
+    if(card.rank==='BJ') return -70;
+    if(card.rank==='SJ') return -60;
+    if(card.suit==='H') return ({A:-50,K:-40,Q:-30,J:-20,10:-10,9:-10,8:-10,7:-10,6:-10,5:-10,4:-5})[card.rank] ?? 0;
+    return 0;
+  }
+  function rankDisplay(card, compact=false){
+    if(card.rank==='BJ') return compact?'大':'大王';
+    if(card.rank==='SJ') return compact?'小':'小王';
+    return card.rank;
+  }
+  function cardLabel(card){
+    if(card.rank==='BJ') return '大王（红桃）';
+    if(card.rank==='SJ') return '小王（红桃）';
+    return `${suits[card.suit].name}${card.rank}`;
+  }
+  function specialCards(cardsIn){return cardsIn.filter(c=>Object.prototype.hasOwnProperty.call(specialIds,cardId(c)));}
+  function safeText(str){return String(str).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+  function cardNode(card, inHand=false){
+    const s=suits[card.suit];
+    const el=document.createElement('button');
+    el.className=`card ${s.cls}${card.rank==='BJ'||card.rank==='SJ'?' joker-card':''}`;
+    el.type='button';
+    el.dataset.id=card.id || cardId(card);
+    el.setAttribute('aria-label',cardLabel(card));
+    el.innerHTML=`<span class="rank">${rankDisplay(card)}</span><span class="suit">${s.symbol}</span><span class="big">${s.symbol}</span>`;
+    if(!inHand){el.tabIndex=-1;el.setAttribute('aria-hidden','true');return el;}
+    const legal = legalCards('south').some(c=>c.id===card.id);
+    el.classList.toggle('selected',selected===card.id);
+    el.classList.toggle('illegal',mode==='play' && currentTurn==='south' && !legal);
+    el.disabled=mode!=='play' || currentTurn!=='south';
+    el.setAttribute('aria-pressed',String(selected===card.id));
+    el.addEventListener('click',()=>{
+      if(mode!=='play' || currentTurn!=='south') return;
+      if(!legalCards('south').some(c=>c.id===card.id)){
+        lastTappedCardId=null;lastTappedAt=0;
+        showToast(leadSuit ? `手里有${suits[leadSuit].name}，必须跟该花色` : '当前无法出这张牌');
+        return;
+      }
+      const now=Date.now();
+      const isSecondTap=selected===card.id && lastTappedCardId===card.id && now-lastTappedAt<=DOUBLE_TAP_MS;
+      if(isSecondTap){lastTappedCardId=null;lastTappedAt=0;playHumanCard(card.id);return;}
+      if(selected!==card.id){selected=card.id;renderHand();}
+      lastTappedCardId=card.id;lastTappedAt=now;
+      $('toast').classList.remove('show');
+      $('statusText').textContent=`已选${cardLabel(card)} · 再点一次直接出牌`;
+      $('statusIcon').textContent='✦';
+    });
+    return el;
+  }
+  function renderHand(){
+    cards=players.south.hand;
+    const hand=$('hand');hand.innerHTML='';
+    cards.forEach((c,i)=>{
+      const node=cardNode(c,true);
+      if(Date.now()<dealAnimationUntil){node.classList.add('deal-in');node.style.animationDelay=`${Math.min(i*14,168)}ms`;}
+      hand.appendChild(node);
+    });
+    $('handCount').textContent=`${cards.length} 张`;
+    $('handMeta').textContent=`手牌 ${cards.length} 张`;
+    $('playBtn').disabled=mode!=='play' || currentTurn!=='south' || selected===null || !cards.some(c=>c.id===selected) || !legalCards('south').some(c=>c.id===selected);
+    $('playBtn').textContent=mode==='matchEnd'?'新开整场':(mode==='settlement'?'下一局':(mode==='resolving'?'结算中…':'出牌'));
+    $('playBtn').classList.toggle('show',mode==='play' && currentTurn==='south');
+  }
+  function miniCardMarkup(card, freshIds=new Set()){
+    const info=suits[card.suit];
+    const label=specialIds[cardId(card)] || '';
+    const title=`${cardLabel(card)}${label?`（${label}）`:''}`;
+    return `<div class="mini-card ${info.cls}${card.rank==='BJ'||card.rank==='SJ'?' joker-card':''}${freshIds.has(card.id)?' fresh':''}" title="${safeText(title)}"><span class="rank">${rankDisplay(card,true)}</span><span class="suit">${info.symbol}</span></div>`;
+  }
+  function renderCapture(playerKey, freshCards=[]){
+    const player=players[playerKey];
+    const hearts=player.captured.filter(c=>c.suit==='H').sort((a,b)=>rankValue(b.rank)-rankValue(a.rank));
+    const specials=specialCards(player.captured).sort((a,b)=>(['S-Q','D-J','C-10'].indexOf(cardId(a))-['S-Q','D-J','C-10'].indexOf(cardId(b))));
+    const heartRow=$(`${playerKey}Hearts`),specialRow=$(`${playerKey}Specials`);
+    const heartCount=$(`${playerKey}HeartCount`),specialCount=$(`${playerKey}SpecialCount`);
+    if(heartCount)heartCount.textContent=`${hearts.length} 张`;
+    if(specialCount)specialCount.textContent=`${specials.length} 张`;
+    const now=Date.now();
+    for(const [token,expiry] of recentCaptureAnimations){if(expiry<=now)recentCaptureAnimations.delete(token);}
+    if(freshCards.length){for(const c of freshCards)recentCaptureAnimations.set(`${playerKey}|${cardId(c)}`,now+420);}
+    const visibleCards=hearts.concat(specials);
+    const freshIds=new Set(visibleCards.filter(c=>(recentCaptureAnimations.get(`${playerKey}|${cardId(c)}`)||0)>now).map(cardId));
+    heartRow.innerHTML=hearts.length?hearts.map(c=>miniCardMarkup(c,freshIds)).join(''):'<span class="capture-empty">暂未收集</span>';
+    specialRow.innerHTML=specials.length?specials.map(c=>miniCardMarkup(c,freshIds)).join(''):'<span class="capture-empty">暂未收集</span>';
+    const panel=document.querySelector(`.capture-panel[data-player="${playerKey}"]`);
+    if(panel && freshCards.length){panel.classList.remove('updated');void panel.offsetWidth;panel.classList.add('updated');clearTimeout(panel.updateTimer);panel.updateTimer=setTimeout(()=>panel.classList.remove('updated'),850);}
+  }
+  function renderAllCaptures(){for(const key of visualOrder)renderCapture(key);}
+  function renderScores(){
+    for(const key of visualOrder){const el=$(`${key}Points`);if(el)el.textContent=players[key].points;}
+    $('targetMeta').textContent=`目标 ${matchTargetPoint} 点`;
+    $('roundMeta').textContent=`第 ${roundNumber} 局 · 第 ${Math.min(trickCount,13)} 墩`;
+  }
+  function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove('show'),2200);}
+
+  // 纯 Web Audio 合成的轻柔“扑克牌落桌”音效：无需下载音频文件，离线也能使用。
+  // 浏览器通常要求用户先进行一次触摸/点击，AudioContext 才允许播放声音。
+  function getSoundContext(){
+    if(audioContext) return audioContext;
+    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+    if(!AudioContextClass) return null;
+    try{
+      audioContext=new AudioContextClass();
+      soundMasterGain=audioContext.createGain();
+      soundMasterGain.gain.value=soundVolume;
+      soundMasterGain.connect(audioContext.destination);
+      return audioContext;
+    }catch(err){return null;}
+  }
+  function playCardSound(preview=false){
+    if(!soundOn) return;
+    const ctx=getSoundContext();
+    if(!ctx){if(preview)showToast('当前浏览器不支持音效');return;}
+    const emit=()=>{
+      if(!soundOn || !soundMasterGain) return;
+      const now=ctx.currentTime;
+      // 短促的纸牌滑动声，使用衰减噪声模拟纸面摩擦。
+      const length=Math.max(1,Math.floor(ctx.sampleRate*0.10));
+      const buffer=ctx.createBuffer(1,length,ctx.sampleRate);
+      const data=buffer.getChannelData(0);
+      for(let i=0;i<length;i++){
+        const fade=1-i/length;
+        data[i]=(Math.random()*2-1)*fade;
+      }
+      const noise=ctx.createBufferSource();noise.buffer=buffer;
+      const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.frequency.setValueAtTime(1550,now);filter.Q.setValueAtTime(0.8,now);
+      const noiseGain=ctx.createGain();noiseGain.gain.setValueAtTime(0.0001,now);noiseGain.gain.exponentialRampToValueAtTime(0.19,now+0.008);noiseGain.gain.exponentialRampToValueAtTime(0.0001,now+0.092);
+      noise.connect(filter);filter.connect(noiseGain);noiseGain.connect(soundMasterGain);
+      noise.start(now);noise.stop(now+0.10);
+      // 很轻的低频触桌声，让出牌听起来不只是“沙沙”声。
+      const tap=ctx.createOscillator();tap.type='triangle';tap.frequency.setValueAtTime(205,now);tap.frequency.exponentialRampToValueAtTime(112,now+0.045);
+      const tapGain=ctx.createGain();tapGain.gain.setValueAtTime(0.0001,now);tapGain.gain.exponentialRampToValueAtTime(0.075,now+0.003);tapGain.gain.exponentialRampToValueAtTime(0.0001,now+0.055);
+      tap.connect(tapGain);tapGain.connect(soundMasterGain);tap.start(now);tap.stop(now+0.06);
+    };
+    if(ctx.state==='suspended') ctx.resume().then(emit).catch(()=>{});
+    else emit();
+  }
+  // Short optional cues for trick collection and round results. All sounds are synthesized offline.
+  function playGameCue(kind){
+    if(!soundOn)return;
+    const ctx=getSoundContext();if(!ctx)return;
+    const sequences={
+      trick:[{f:392,t:0,d:.09,a:.042},{f:523.25,t:.075,d:.12,a:.05}],
+      special:[{f:659.25,t:0,d:.12,a:.055},{f:880,t:.085,d:.18,a:.06}],
+      settle:[{f:523.25,t:0,d:.1,a:.04},{f:659.25,t:.105,d:.1,a:.045},{f:783.99,t:.21,d:.16,a:.05}]
+    };
+    const notes=sequences[kind]||[];
+    const emit=()=>{
+      if(!soundOn||!soundMasterGain)return;
+      const now=ctx.currentTime;
+      for(const note of notes){
+        const osc=ctx.createOscillator(),gain=ctx.createGain();
+        osc.type='sine';osc.frequency.setValueAtTime(note.f,now+note.t);
+        gain.gain.setValueAtTime(.0001,now+note.t);
+        gain.gain.exponentialRampToValueAtTime(note.a,now+note.t+.012);
+        gain.gain.exponentialRampToValueAtTime(.0001,now+note.t+note.d);
+        osc.connect(gain);gain.connect(soundMasterGain);
+        osc.start(now+note.t);osc.stop(now+note.t+note.d+.015);
+      }
+    };
+    if(ctx.state==='suspended')ctx.resume().then(emit).catch(()=>{});else emit();
+  }
+  function setActiveSeat(playerKey, winner=false){
+    document.querySelectorAll('.seat').forEach(el=>el.classList.remove('active-turn','last-winner'));
+    const active=document.querySelector(`.seat.${playerKey}`);if(active)active.classList.add(winner?'last-winner':'active-turn');
+  }
+  function legalCards(playerKey){
+    const hand=players[playerKey].hand;
+    if(!leadSuit)return hand.slice();
+    const follow=hand.filter(c=>c.suit===leadSuit);
+    return follow.length?follow:hand.slice();
+  }
+  function currentWinner(){
+    let best=null;
+    for(const key of turnOrder){
+      const card=tablePlays[key];
+      if(!card || card.suit!==leadSuit)continue;
+      if(!best || rankValue(card.rank)>rankValue(best.card.rank))best={player:key,card};
+    }
+    return best?.player || leader;
+  }
+  function renderTrick(){
+    const slots=$('trickSlots');slots.innerHTML='';
+    for(const playerKey of visualOrder){
+      const played=tablePlays[playerKey];
+      const slot=document.createElement('div');
+      slot.className=`trick-slot ${playerKey}`+(played?' played':'')+(trickWinner===playerKey?' winner':'')+(mode==='play'&&currentTurn===playerKey&&!played?' current-turn':'');
+      slot.setAttribute('aria-label',`${seatNames[playerKey]}${played?'已出牌':'等待出牌'}`);
+      const label=document.createElement('span');label.className='slot-name';label.textContent=seatNames[playerKey];slot.appendChild(label);
+      if(played){
+        const playedNode=cardNode(played);
+        if(Date.now()<lastPlayAnimationUntil && playerKey===lastPlayedPlayer && played.id===lastPlayedCardId){playedNode.classList.add('played-enter');}
+        slot.appendChild(playedNode);
+        if(trickWinner===playerKey){const tag=document.createElement('span');tag.className='winner-tag';tag.textContent='赢墩';slot.appendChild(tag);}
+      }
+      else{const back=document.createElement('div');back.className='card-back'+(mode==='play'&&currentTurn===playerKey&&playerKey==='south'?' turn-target':'');back.setAttribute('aria-hidden','true');slot.appendChild(back);}
+      slots.appendChild(slot);
+    }
+    const playedCount=Object.values(tablePlays).filter(Boolean).length;
+    $('trickLabel').textContent=trickWinner?`第 ${trickCount} 墩 · ${seatNames[trickWinner]}赢墩`:`第 ${trickCount} 墩 · ${playedCount} / 4 已出`;
+  }
+  function updateSeatStates(){
+    const nameEls={north:$('northState'),west:document.querySelector('.seat.west .seat-state'),east:document.querySelector('.seat.east .seat-state'),south:$('selfState')};
+    for(const key of visualOrder){
+      let text='';
+      if(mode==='matchEnd')text=`整场结束 · ${players[key].points} 点`;
+      else if(mode==='settlement')text=`本局结束 · ${players[key].tricks} 墩`;
+      else if(tablePlays[key])text=`已出牌 · 剩 ${players[key].hand.length} 张`;
+      else if(mode==='play' && currentTurn===key)text=key==='south'?'轮到你出牌':'正在思考…';
+      else text=`剩余 ${players[key].hand.length} 张`;
+      if(nameEls[key])nameEls[key].textContent=text;
+    }
+    if(mode==='play')setActiveSeat(currentTurn);
+    else if(trickWinner)setActiveSeat(trickWinner,true);
+    else document.querySelectorAll('.seat').forEach(el=>el.classList.remove('active-turn','last-winner'));
+  }
+  function updateStatus(){
+    const pill=$('statusPill');pill.classList.toggle('complete',mode==='settlement'||mode==='matchEnd'||mode==='resolving');
+    if(mode==='play' && currentTurn==='south'){
+      $('statusText').textContent=leadSuit?`轮到你跟${suits[leadSuit].name}`:(trickCount===1?`你领出第一张牌`:'轮到你领出');
+      $('statusIcon').textContent=leadSuit?suits[leadSuit].symbol:'♧';
+      $('timer').textContent=secondsLeft;$('timerUnit').textContent='秒';
+    }else if(mode==='play'){
+      $('statusText').textContent=`轮到${seatNames[currentTurn]}出牌`;$('statusIcon').textContent='◷';$('timer').textContent='…';$('timerUnit').textContent='';
+    }else if(mode==='resolving'){
+      $('statusText').textContent=trickWinner?`${seatNames[trickWinner]}赢得本墩`:'本墩结算中';$('statusIcon').textContent='✓';$('timer').textContent='✓';$('timerUnit').textContent='';
+    }else if(mode==='settlement'){
+      $('statusText').textContent='本局已结束 · 查看结算';$('statusIcon').textContent='★';$('timer').textContent='13';$('timerUnit').textContent='墩';
+    }else{
+      $('statusText').textContent='整场游戏结束';$('statusIcon').textContent='🏆';$('timer').textContent='✓';$('timerUnit').textContent='';
+    }
+  }
+  function renderAll(){renderHand();renderTrick();renderAllCaptures();renderScores();updateSeatStates();updateStatus();}
+  function stopTimers(){clearTimeout(botTimer);clearTimeout(trickTimer);clearInterval(userTurnTimer);botTimer=null;trickTimer=null;userTurnTimer=null;}
+  function startUserTurnTimer(){
+    clearInterval(userTurnTimer);secondsLeft=30;updateStatus();
+    userTurnTimer=setInterval(()=>{
+      if(mode!=='play'||currentTurn!=='south'){clearInterval(userTurnTimer);return;}
+      secondsLeft--;updateStatus();
+      if(secondsLeft<=0){clearInterval(userTurnTimer);const legal=legalCards('south');const auto=chooseBotCard('south',legal);showToast(`超时，自动打出${cardLabel(auto)}`);playHumanCard(auto.id,true);}
+    },1000);
+  }
+  function dealRound(){
+    stopTimers();
+    for(const key of visualOrder){players[key].hand=[];players[key].captured=[];players[key].tricks=0;}
+    const deck=shuffle(createDeck());
+    for(let i=0;i<deck.length;i++)players[turnOrder[i%4]].hand.push(deck[i]);
+    for(const key of visualOrder)sortHand(players[key].hand);
+    // 机器人只记住各自的初始私有身份；公开身份只有在猪/羊实际打出时才揭示。
+    aiInitialSpecials=Object.fromEntries(visualOrder.map(key=>[key,{
+      pig:players[key].hand.some(c=>c.id==='S-Q'),
+      sheep:players[key].hand.some(c=>c.id==='D-J')
+    }]));
+    publicSpecialOwners={pig:null,sheep:null};
+    publicSeenIds=new Set();
+    // 发牌后立即锁定本局队伍，之后不再根据最终收牌归属重新组队。
+    roundPigOwner=visualOrder.find(key=>players[key].hand.some(c=>c.id==='S-Q')) || null;
+    roundSheepOwner=visualOrder.find(key=>players[key].hand.some(c=>c.id==='D-J')) || null;
+    cards=players.south.hand;selected=null;lastTappedCardId=null;lastTappedAt=0;
+    dealAnimationUntil=Date.now()+420;lastPlayAnimationUntil=0;lastPlayedPlayer=null;lastPlayedCardId=null;recentCaptureAnimations.clear();
+    const c2Owner=visualOrder.find(key=>players[key].hand.some(c=>c.id==='C-2'));
+    currentTurn=c2Owner;leader=c2Owner;turnIndex=turnOrder.indexOf(c2Owner);leadSuit=null;trickCount=1;
+    tablePlays={north:null,west:null,east:null,south:null};trickWinner=null;mode='play';
+    $('footerNote').textContent='本地单机 · 三家策略机器人';
+    renderAll();
+    showToast(`${seatNames[c2Owner]}持有梅花2，获得首墩领出权（可出任意手牌）`);
+    advanceTurn();
+  }
+  function newMatch(){
+    for(const key of visualOrder)players[key].points=0;
+    roundNumber=1;dealRound();
+  }
+  function cardScoreSum(cardList){return cardList.reduce((sum,c)=>sum+cardScore(c),0);}
+  function knownTeamForBot(playerKey){
+    const pig=publicSpecialOwners.pig;
+    const sheep=publicSpecialOwners.sheep;
+    // 两张特殊牌都已公开打出后，依据其真实出牌人可完整推断队伍。
+    if(pig && sheep){
+      if(pig===sheep) return playerKey===pig ? [pig] : visualOrder.filter(k=>k!==pig);
+      return (playerKey===pig || playerKey===sheep) ? [pig,sheep] : visualOrder.filter(k=>k!==pig && k!==sheep);
+    }
+    const own=aiInitialSpecials[playerKey] || {pig:false,sheep:false};
+    // 自己起手同时持猪羊，知道自己是单人队；或者已看到搭档的另一张牌。
+    if(own.pig && own.sheep) return [playerKey];
+    if(own.pig && sheep) return [playerKey,sheep];
+    if(own.sheep && pig) return [playerKey,pig];
+    return null;
+  }
+  function aiTeammateRelation(playerKey, otherKey){
+    if(playerKey===otherKey) return true;
+    const known=knownTeamForBot(playerKey);
+    return known ? known.includes(otherKey) : null;
+  }
+  function aiExpectedTeamSign(playerKey, otherKey){
+    const relation=aiTeammateRelation(playerKey,otherKey);
+    if(relation===true) return 1;
+    if(relation===false) return -1;
+    const own=aiInitialSpecials[playerKey] || {pig:false,sheep:false};
+    // 如果自己明确只拿到猪或羊，搭档是另外一张特殊牌的持有者：在尚未揭示时，
+    // 当前任意一名其他玩家成为搭档的先验概率约为1/3，因此期望队伍方向为-1/3。
+    if(Boolean(own.pig)!==Boolean(own.sheep)) return -1/3;
+    // 自己起手两张都没有时，队友尚不可判断，使用中性期望，不假装知道身份。
+    return 0;
+  }
+  function compareLeadRisk(a,b,hand){
+    const suitCount=hand.reduce((n,c)=>n+(c.suit===a.suit?1:0),0)-hand.reduce((n,c)=>n+(c.suit===b.suit?1:0),0);
+    if(suitCount) return suitCount;
+    return rankValue(a.rank)-rankValue(b.rank);
+  }
+  function unseenCardsForBot(playerKey){
+    const ownIds=new Set(players[playerKey].hand.map(cardId));
+    return createDeck().filter(c=>!publicSeenIds.has(cardId(c))&&!ownIds.has(cardId(c)));
+  }
+  function futurePlayersAfter(playerKey){
+    const idx=turnOrder.indexOf(playerKey),future=[];
+    for(let offset=1;offset<turnOrder.length;offset++){
+      const key=turnOrder[(idx+offset)%turnOrder.length];
+      if(!tablePlays[key]) future.push(key);
+    }
+    return future;
+  }
+  function probabilityLeadSurvives(playerKey,targetRank){
+    const future=futurePlayersAfter(playerKey);
+    if(!future.length)return 1;
+    const unseen=unseenCardsForBot(playerKey);
+    const total=unseen.length;
+    const higher=unseen.filter(c=>c.suit===leadSuit && rankValue(c.rank)>rankValue(targetRank)).length;
+    if(!higher || !total)return 1;
+    const futureSlots=future.reduce((n,key)=>n+players[key].hand.length,0);
+    let pNoHigher=1;
+    for(let i=0;i<futureSlots;i++){
+      const denominator=total-i;
+      if(denominator<=0 || total-higher-i<=0){pNoHigher=0;break;}
+      pNoHigher*=(total-higher-i)/denominator;
+    }
+    // 持有更高牌不代表一定会压：对手也可能保留高张，故将超几何概率折算为较保守估计。
+    const pBeat=Math.min(0.9,(1-pNoHigher)*0.65);
+    return 1-pBeat;
+  }
+  function chooseBotCard(playerKey, legal){
+    if(legal.length===1)return legal[0];
+    const hand=players[playerKey].hand;
+    const tableCards=Object.values(tablePlays).filter(Boolean);
+
+    // 领出时优先打低风险、零分的普通牌；倾向先处理短花色，保留高张控制力。
+    if(!leadSuit){
+      const safeZero=legal.filter(c=>cardScore(c)===0 && !specialIds[cardId(c)] && cardId(c)!=='C-2');
+      if(safeZero.length) return safeZero.slice().sort((a,b)=>compareLeadRisk(a,b,hand))[0];
+      const safeNonScoring=legal.filter(c=>!specialIds[cardId(c)] && cardScore(c)===0 && c.rank!=='BJ' && c.rank!=='SJ');
+      if(safeNonScoring.length) return safeNonScoring.slice().sort((a,b)=>compareLeadRisk(a,b,hand))[0];
+      // 无安全普通牌可出时，优先暴露分值影响较小的牌，避免随意领出猪/羊/倒板/大小王。
+      return legal.slice().sort((a,b)=>{
+        const aRisk=Math.abs(cardScore(a))+(specialIds[cardId(a)]?35:0)+(cardId(a)==='C-10'?30:0);
+        const bRisk=Math.abs(cardScore(b))+(specialIds[cardId(b)]?35:0)+(cardId(b)==='C-10'?30:0);
+        return aRisk-bRisk || compareLeadRisk(a,b,hand);
+      })[0];
+    }
+
+    const currentKey=currentWinner();
+    const currentCard=tablePlays[currentKey];
+    const currentHigh=currentCard ? rankValue(currentCard.rank) : 0;
+    const baseScore=cardScoreSum(tableCards);
+
+    // 选择牌时评估“当前谁会暂时赢墩”与“这墩的牌分”，而非盲目抢高牌。
+    // 得分高的牌墩更适合由己方收走；负分牌墩尽量交给对方收走。
+    const evaluated=legal.map(card=>{
+      const takesLead=card.suit===leadSuit && rankValue(card.rank)>currentHigh;
+      const projectedWinner=takesLead?playerKey:currentKey;
+      const projectedCards=tableCards.concat(card);
+      const projectedTrickScore=cardScoreSum(projectedCards);
+      const currentSideSign=aiExpectedTeamSign(playerKey,projectedWinner);
+      const targetRank=takesLead?card.rank:(currentCard?.rank || card.rank);
+      const survive=probabilityLeadSurvives(playerKey,targetRank);
+      const futurePlayers=futurePlayersAfter(playerKey);
+      const futureSideSign=futurePlayers.length
+        ? futurePlayers.reduce((sum,key)=>sum+aiExpectedTeamSign(playerKey,key),0)/futurePlayers.length
+        : currentSideSign;
+      const expectedSideSign=survive*currentSideSign+(1-survive)*futureSideSign;
+      let utility=projectedTrickScore*expectedSideSign;
+
+      // 倒板会改变收牌者整局牌分：估算当前收牌堆与本墩牌分的翻倍影响。
+      // 这里只用自己手牌、公开出牌历史和当前收牌数据，不读取对手隐藏手牌。
+      if(projectedCards.some(c=>cardId(c)==='C-10')){
+        const prior=players[projectedWinner].captured.filter(c=>cardId(c)!=='C-10');
+        const trickScoring=projectedCards.filter(c=>cardId(c)!=='C-10');
+        const raw=cardScoreSum(prior)+cardScoreSum(trickScoring);
+        const hasAnyScoring=prior.concat(trickScoring).some(c=>cardScore(c)!==0);
+        const transformerImpact=hasAnyScoring?raw:50;
+        utility+=transformerImpact*expectedSideSign;
+      }
+
+      // 保留高张，除非争取本墩的预期收益足够；平分时优先出较低牌。
+      const rankCost=rankValue(card.rank)*0.035;
+      utility-=rankCost;
+      // 若已经有明确的对手在赢负分墩，尽可能把自己的负分牌垫给对手；
+      // 正分牌（尤其羊）则尽量避免白送给对手。
+      const projectedRelation=aiTeammateRelation(playerKey,projectedWinner);
+      if(projectedRelation===false && cardScore(card)<0) utility+=1.2;
+      if(projectedRelation===false && cardScore(card)>0) utility-=1.2;
+      if(projectedRelation===true && cardScore(card)<0) utility-=1.2;
+      if(projectedRelation===true && cardScore(card)>0) utility+=1.2;
+      return {card,utility,takesLead,projectedTrickScore};
+    });
+    evaluated.sort((a,b)=>b.utility-a.utility || rankValue(a.card.rank)-rankValue(b.card.rank));
+    return evaluated[0].card;
+  }
+  function scheduleBot(){
+    clearTimeout(botTimer);
+    if(mode!=='play'||currentTurn==='south')return;
+    botTimer=setTimeout(()=>{
+      if(mode!=='play'||currentTurn==='south')return;
+      const legal=legalCards(currentTurn);
+      if(!legal.length)return;
+      const card=chooseBotCard(currentTurn,legal);
+      executePlay(currentTurn,card);
+    },BOT_DELAY_MS);
+  }
+  function advanceTurn(){
+    if(mode!=='play')return;
+    if(currentTurn==='south')startUserTurnTimer();
+    else{clearInterval(userTurnTimer);updateStatus();scheduleBot();}
+    renderHand();renderTrick();renderScores();updateSeatStates();
+  }
+  function playHumanCard(id,fromTimeout=false){
+    if(mode!=='play'||currentTurn!=='south')return;
+    const card=players.south.hand.find(c=>c.id===id);
+    if(!card || !legalCards('south').some(c=>c.id===id))return;
+    selected=null;lastTappedCardId=null;lastTappedAt=0;
+    clearInterval(userTurnTimer);
+    executePlay('south',card,fromTimeout);
+  }
+  function executePlay(playerKey,card){
+    if(mode!=='play'||currentTurn!==playerKey)return;
+    const player=players[playerKey];
+    const index=player.hand.findIndex(c=>c.id===card.id);
+    if(index<0)return;
+    publicSeenIds.add(cardId(card));
+    if(card.id==='S-Q') publicSpecialOwners.pig=playerKey;
+    if(card.id==='D-J') publicSpecialOwners.sheep=playerKey;
+    playCardSound();
+    lastPlayedPlayer=playerKey;lastPlayedCardId=card.id;lastPlayAnimationUntil=Date.now()+360;
+    player.hand.splice(index,1);
+    if(!leadSuit){leadSuit=card.suit;leader=playerKey;}
+    tablePlays[playerKey]=card;
+    trickWinner=null;
+    $('footerNote').textContent='每张牌都按真实牌局结算';
+    const playedCount=Object.values(tablePlays).filter(Boolean).length;
+    renderHand();renderTrick();updateSeatStates();updateStatus();renderScores();
+    if(playedCount===4){
+      mode='resolving';trickWinner=currentWinner();
+      renderHand();renderTrick();updateSeatStates();updateStatus();
+      trickTimer=setTimeout(finishTrick,TRICK_REVEAL_MS);
+      return;
+    }
+    turnIndex=(turnOrder.indexOf(playerKey)+1)%turnOrder.length;
+    currentTurn=turnOrder[turnIndex];
+    advanceTurn();
+  }
+  function finishTrick(){
+    if(mode!=='resolving')return;
+    const winner=players[trickWinner];
+    const wonCards=Object.values(tablePlays).filter(Boolean);
+    winner.captured.push(...wonCards);winner.tricks++;
+    for(const key of visualOrder)renderCapture(key,key===trickWinner?wonCards:[]);
+    const thisWinner=trickWinner;
+    playGameCue('trick');
+    showToast(`${captureNames[thisWinner]}赢得第 ${trickCount} 墩`);
+    if(trickCount>=13){
+      mode='settlement';selected=null;renderAll();settleRound();return;
+    }
+    trickCount++;
+    leader=thisWinner;currentTurn=thisWinner;turnIndex=turnOrder.indexOf(thisWinner);
+    leadSuit=null;tablePlays={north:null,west:null,east:null,south:null};trickWinner=null;mode='play';selected=null;
+    renderAll();advanceTurn();
+  }
+  function hasCard(playerKey,id){return players[playerKey].captured.some(c=>c.id===id);}
+  const RED_COLLECTION_IDS = ['H-BJ','H-SJ','H-A','H-K','H-Q','H-J','H-10','H-9','H-8','H-7','H-6','H-5','H-4'];
+  function hasAllHearts(playerKey){
+    const capturedIds=new Set(players[playerKey].captured.map(cardId));
+    return RED_COLLECTION_IDS.every(id=>capturedIds.has(id));
+  }
+  function hasGrandSlam(playerKey){return hasAllHearts(playerKey)&&hasCard(playerKey,'S-Q')&&hasCard(playerKey,'D-J')&&hasCard(playerKey,'C-10');}
+  function getCardScore(playerKey){
+    const captured=players[playerKey].captured;
+    const transformer=hasCard(playerKey,'C-10');
+    // 倒板规则：若本局唯一的计分牌是梅花10，则 +50；
+    // 若同时收集到其他计分牌，不额外加50，只把其他计分牌总分乘以2。
+    const scoringCards=captured.filter(c=>cardId(c)!=='C-10' && cardScore(c)!==0);
+    const raw=scoringCards.reduce((sum,c)=>sum+cardScore(c),0);
+    if(transformer && scoringCards.length===0){
+      return {raw:50,multiplier:1,total:50,transformer:true,standalone:true};
+    }
+    if(transformer){
+      return {raw,multiplier:2,total:raw*2,transformer:true,standalone:false};
+    }
+    return {raw,multiplier:1,total:raw,transformer:false,standalone:false};
+  }
+  function teamForRound(){
+    // 队伍依据发牌后的初始手牌归属固定；不能使用最终收牌堆来决定队友。
+    const pigOwner=roundPigOwner;
+    const sheepOwner=roundSheepOwner;
+    if(pigOwner===sheepOwner){return {pigOwner,sheepOwner,teamA:[pigOwner],teamB:visualOrder.filter(k=>k!==pigOwner)};}
+    return {pigOwner,sheepOwner,teamA:[pigOwner,sheepOwner],teamB:visualOrder.filter(k=>k!==pigOwner&&k!==sheepOwner)};
+  }
+  function listNames(keys){return keys.map(k=>seatNames[k]+'（'+players[k].name+'）').join('、');}
+  function calculateRoundPointChanges(teamA,teamB,winningTeam,roundDelta,playerKeys){
+    const changes=Object.fromEntries(playerKeys.map(k=>[k,0]));
+    const isOneVsThree=teamA.length===1 || teamB.length===1;
+    if(isOneVsThree){
+      const soloTeam=teamA.length===1?teamA:teamB;
+      const threeTeam=soloTeam===teamA?teamB:teamA;
+      if(winningTeam===soloTeam){
+        changes[soloTeam[0]]=roundDelta*3;
+        for(const key of threeTeam)changes[key]=-roundDelta;
+      }else{
+        changes[soloTeam[0]]=-roundDelta*3;
+        for(const key of threeTeam)changes[key]=roundDelta;
+      }
+    }else{
+      const losingTeam=winningTeam===teamA?teamB:teamA;
+      for(const key of winningTeam)changes[key]=roundDelta;
+      for(const key of losingTeam)changes[key]=-roundDelta;
+    }
+    return {changes,isOneVsThree};
+  }
+  function determineRoundOutcome(teams,cardScores,grandOwner,fullRedOwner){
+    const grand=Boolean(grandOwner);
+    const fullRed=Boolean(fullRedOwner);
+    const specialType=grand?'满贯':(fullRed?'全红':'普通对局');
+    const roundDelta=grand?3:(fullRed?2:1);
+    const teamScoreA=teams.teamA.reduce((sum,k)=>sum+cardScores[k].total,0);
+    const teamScoreB=teams.teamB.reduce((sum,k)=>sum+cardScores[k].total,0);
+    let winningTeam,losingTeam,winReason;
+    // 特殊牌型优先：满贯 > 全红；对应牌型收集者所在队伍直接获胜。
+    if(grand){
+      winningTeam=teams.teamA.includes(grandOwner)?teams.teamA:teams.teamB;
+      winReason='满贯特殊胜利';
+    }else if(fullRed){
+      winningTeam=teams.teamA.includes(fullRedOwner)?teams.teamA:teams.teamB;
+      winReason='全红特殊胜利';
+    }else{
+      // 普通局只比较牌面分总和，绝不使用赢墩数判断胜负。
+      winningTeam=teamScoreA>teamScoreB?teams.teamA:teams.teamB;
+      winReason='队伍最终牌面分总和更高';
+    }
+    losingTeam=winningTeam===teams.teamA?teams.teamB:teams.teamA;
+    return {grand,fullRed,specialType,roundDelta,teamScoreA,teamScoreB,winningTeam,losingTeam,winReason};
+  }
+  function settleRound(){
+    const teams=teamForRound();
+    const grandOwner=visualOrder.find(hasGrandSlam);
+    const fullRedOwner=visualOrder.find(hasAllHearts);
+    const cardScores=Object.fromEntries(visualOrder.map(k=>[k,getCardScore(k)]));
+    const {grand,fullRed,specialType,roundDelta,teamScoreA,teamScoreB,winningTeam,losingTeam,winReason}=determineRoundOutcome(teams,cardScores,grandOwner,fullRedOwner);
+    // 对局点数：2打2时每人按基础点数结算；1打3时单人方按三倍结算，三人方每人按基础点数反向结算。
+    const {changes:pointChanges,isOneVsThree}=calculateRoundPointChanges(teams.teamA,teams.teamB,winningTeam,roundDelta,visualOrder);
+    for(const key of visualOrder)players[key].points+=pointChanges[key];
+    const metTarget=visualOrder.filter(k=>players[k].points>=matchTargetPoint);
+    const isMatchEnd=metTarget.length>0;
+    mode=isMatchEnd?'matchEnd':'settlement';
+    renderAll();
+    const scoreRows=visualOrder.map(k=>{
+      const cardScoreInfo=cardScores[k];
+      const point=players[k].points;
+      const change=pointChanges[k];
+      const cardScoreDisplay=cardScoreInfo.standalone?'+50（单独倒板）':(cardScoreInfo.transformer?`${cardScoreInfo.raw} × 2 = ${cardScoreInfo.total}`:`${cardScoreInfo.total>0?'+':''}${cardScoreInfo.total}`);
+      return `<tr><td>${seatNames[k]} · ${safeText(players[k].name)}</td><td>${cardScoreDisplay}</td><td style="color:${change>0?'#9ff0bb':change<0?'#ffb2b2':'inherit'};font-weight:800">${change>0?'+':''}${change}</td><td>${point>0?'+':''}${point}</td></tr>`;
+    }).join('');
+    const resultDetail=grand?`满贯玩家：${seatNames[grandOwner]}`:(fullRed?`全红玩家：${seatNames[fullRedOwner]}`:`猪羊方（A队）总分 ${teamScoreA>0?'+':''}${teamScoreA} 分；另一队（B队）总分 ${teamScoreB>0?'+':''}${teamScoreB} 分`);
+    const pointRuleSummary=isOneVsThree?`1 打 3：单人队本局点数变化为 ±${roundDelta*3}，三人队每人反向变化 ±${roundDelta}`:`2 打 2：每位玩家本局点数变化为 ±${roundDelta}`;
+    const body=`
+      <p><b>本局牌型：</b><span style="color:#ffdc83">${specialType}</span>。${pointRuleSummary}。</p>
+      <p><b>初始持猪（发牌时）：</b>${seatNames[teams.pigOwner]}　<b>初始持羊（发牌时）：</b>${seatNames[teams.sheepOwner]} <span style="color:#bcd7ff">（据此组队，本局固定）</span></p>
+      <p><b>本局胜方：</b>${listNames(winningTeam)}；${winReason}。</p>
+      <p><b>判定依据：</b>${resultDetail}</p>
+      <div style="overflow-x:auto"><table class="settle-table"><thead><tr><th>玩家</th><th>牌面分</th><th>本局变化</th><th>累计点数</th></tr></thead><tbody>${scoreRows}</tbody></table></div>
+      <p>${isMatchEnd?`<b style="color:#ffe29b">达到目标 ${matchTargetPoint} 点：${listNames(metTarget)}。整场游戏结束。</b>`:`目标 ${matchTargetPoint} 点；任意一名玩家达到目标后整场结束。`}</p>
+      <button class="btn gold" id="settlementAction" data-action="${isMatchEnd?'new-match':'next-round'}" style="width:100%;margin-top:8px">${isMatchEnd?'再开一场':'下一局'}</button>`;
+    openModal(isMatchEnd?'整场结算':`第 ${roundNumber} 局结算`,body,true,true);
+    playGameCue(grand||fullRed?'special':'settle');
+  }
+  function startNextRound(){
+    closeModal(true);
+    if(mode==='matchEnd')newMatch();
+    else{roundNumber++;dealRound();}
+  }
+  function resetToNewMatch(){
+    closeModal(true);newMatch();
+  }
+  function openModal(title,html,sticky=false,clearBackground=false){modalSticky=sticky;$('modalTitle').textContent=title;$('modalBody').innerHTML=html;document.querySelector('.modal-foot').style.display=sticky?'none':'flex';$('modalBackdrop').classList.toggle('clear-bg',clearBackground);$('modalBackdrop').classList.add('show');}
+  function closeModal(force=false){if(modalSticky&&!force)return;modalSticky=false;document.querySelector('.modal-foot').style.display='flex';$('modalBackdrop').classList.remove('show','clear-bg');}
+  $('modalBody').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;if(btn.dataset.action==='next-round')startNextRound();if(btn.dataset.action==='new-match')resetToNewMatch();if(btn.dataset.action==='save-target'){const value=Number($('targetInput')?.value);if(!Number.isFinite(value)||value<1||value>999){showToast('目标点数请输入 1–999');return;}matchTargetPoint=Math.floor(value);renderScores();closeModal();showToast(`整场目标已设为 ${matchTargetPoint} 点`);}});
+  $('newMatchBtn').addEventListener('click',()=>{newMatch();showToast('新的一场开始了');});
+  $('playBtn').addEventListener('click',()=>{if(mode==='play'&&selected)playHumanCard(selected);else if(mode==='settlement'||mode==='matchEnd')startNextRound();});
+  $('soundBtn').addEventListener('click',()=>{
+    soundOn=!soundOn;writePref('soundOn',soundOn);
+    $('soundBtn').querySelector('.ico').textContent=soundOn?'♫':'×';
+    $('soundBtn').setAttribute('aria-pressed',String(soundOn));
+    $('soundBtn').title=soundOn?'关闭出牌音效':'开启出牌音效';
+    if(soundOn){playCardSound(true);showToast('出牌音效已开启');}
+    else showToast('出牌音效已关闭');
+  });
+  $('soundBtn').querySelector('.ico').textContent=soundOn?'♫':'×';
+  $('soundBtn').setAttribute('aria-pressed',String(soundOn));
+  $('soundBtn').title=soundOn?'关闭出牌音效':'开启出牌音效';
+  $('settingsBtn').addEventListener('click',()=>{
+    openModal('设置',`<p>当前是本地单机试玩版，另外三家由策略机器人操作。</p>
+      <label for="targetInput" style="display:block;margin:12px 0 6px;color:#f6d68f">整场目标点数（1–999）</label>
+      <input id="targetInput" type="number" min="1" max="999" value="${matchTargetPoint}" style="width:100%;padding:10px;border-radius:8px;border:1px solid #7894c1;background:#102b57;color:white;font:inherit">
+      <label for="soundVolumeInput" style="display:flex;justify-content:space-between;margin:16px 0 6px;color:#f6d68f">音效音量 <span id="soundVolumeLabel">${Math.round(soundVolume*100)}%</span></label>
+      <input id="soundVolumeInput" type="range" min="0" max="100" step="5" value="${Math.round(soundVolume*100)}" style="width:100%;accent-color:#f4d28a">
+      <p style="margin-top:4px">音效设置会保存在本机浏览器中。</p>
+      <button class="btn gold" data-action="save-target" style="width:100%;margin-top:10px">保存目标</button>`);
+    const volumeInput=$('soundVolumeInput');
+    volumeInput?.addEventListener('input',()=>{
+      soundVolume=Number(volumeInput.value)/100;
+      $('soundVolumeLabel').textContent=`${Math.round(soundVolume*100)}%`;
+      if(soundMasterGain)soundMasterGain.gain.setTargetAtTime(soundVolume,audioContext.currentTime,.025);
+      writePref('soundVolume',soundVolume);
+    });
+  });
+  $('helpBtn').addEventListener('click',()=>openModal('猪羊弟 · 游戏规则',`<p><b>发牌：</b>52 张牌，每人 13 张。去掉红桃 2、红桃 3，加入大王和小王；大王、小王按红桃花色参与跟牌。持有梅花 2 的玩家获得首墩领出权，但不强制打出梅花 2；首墩可选择手牌中的任意一张牌领出。</p><p><b>红桃大小：</b>大王 &gt; 小王 &gt; 红桃 A &gt; 红桃 K &gt; 红桃 Q &gt; 红桃 J &gt; 红桃 10 &gt; 9 &gt; 8 &gt; 7 &gt; 6 &gt; 5 &gt; 4。出红桃时，有红桃（包括大小王）必须跟。</p><p><b>跟牌：</b>有领出花色必须跟；没有该花色可以垫任意牌。只有领出花色中的最大牌赢墩，垫牌不能赢墩。</p><p><b>猪羊组队：</b>发牌后依据初始手牌中的黑桃 Q（猪）与方块 J（羊）确定本局队伍；猪羊在同一人手中时，该玩家 1 打 3。之后猪羊被谁赢走都不改变队伍。</p><p><b>牌型：</b>全红＝一人收齐大王、小王和红桃 A 至 4，共 13 张；满贯＝同一人收齐全红的 13 张牌，并额外收齐猪、羊和倒板梅花 10；满贯优先。</p><p><b>对局点数：</b>2打2时普通 ±1、全红 ±2、满贯 ±3，胜负双方每人按基础点数加减。猪羊同属一人时为1打3，单人队按三倍结算（普通 ±3、全红 ±6、满贯 ±9），三人队每人按基础点数反向加减。每位玩家独立累计，任意玩家达到目标点数后整场结束。</p><p><b>牌面分：</b>猪 -100、羊 +100；大王 -70、小王 -60；红桃 A -50、K -40、Q -30、J -20、红桃 10 至 5 各 -10、红桃 4 -5。倒板规则：若本局唯一的计分牌是梅花 10，则 +50 分；若同时收集到其他计分牌，不额外加 +50，只把其他计分牌总分乘以 2。普通局按猪羊组队后两队最终牌面分总和判胜，负分更少（总分更高）的一队获胜；全红/满贯由收齐该牌型的玩家所在队伍获胜，满贯优先。赢墩数只用于决定每墩收牌归属，不用于判定本局胜负。</p>`));
+  $('closeModal').addEventListener('click',()=>closeModal());$('modalOk').addEventListener('click',()=>closeModal());$('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal();});
+  function toggleChat(){$('chatPop').classList.toggle('show');}
+  $('chatBtn').addEventListener('click',toggleChat);$('chatTopBtn').addEventListener('click',toggleChat);
+  $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim()){const p=document.createElement('p');p.textContent='你：'+e.target.value.trim();$('chatPop').insertBefore(p,$('chatInput'));e.target.value='';showToast('本地聊天演示');}});
+
+  // Small read-only diagnostic API is convenient for local tests and does not drive gameplay.
+  window.pigSheepInfo=()=>{const t=teamForRound();return {roundNumber,trickCount,mode,currentTurn,leadSuit,handCount:players.south.hand.length,tableCards:Object.values(tablePlays).filter(Boolean).length,teamAssignment:{pigInitialHolder:roundPigOwner,sheepInitialHolder:roundSheepOwner,teamA:[...t.teamA],teamB:[...t.teamB],pigFinalCaptor:visualOrder.find(k=>hasCard(k,'S-Q'))||null,sheepFinalCaptor:visualOrder.find(k=>hasCard(k,'D-J'))||null},players:Object.fromEntries(visualOrder.map(k=>[k,{name:players[k].name,handCount:players[k].hand.length,captured:players[k].captured.length,tricks:players[k].tricks,points:players[k].points}]))};};
+  renderAll();
+  dealRound();
+})();
+
+</script>
+</body>
+</html>

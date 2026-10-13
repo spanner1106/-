@@ -1,0 +1,16 @@
+{
+  "name": "pig-sheep-online",
+  "version": "0.1.0",
+  "private": true,
+  "description": "猪羊弟重庆猪羊一家拱猪 - 好友联机原型",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}
