@@ -618,11 +618,20 @@
   }
 
 
-/* v2.0: larger pig/sheep badges below each avatar. */
+/* v2.0: previous pig/sheep badges (hidden in v2.1). */
 .avatar-specials{height:25px;min-width:25px;gap:4px}
 .special-marker{width:23px;height:23px;font-size:17px;border-width:1px}
 @media(max-width:700px){.avatar-specials{height:22px;gap:3px}.special-marker{width:20px;height:20px;font-size:15px}}
 @media(max-height:430px) and (orientation:landscape){.avatar-specials{height:20px;gap:2px}.special-marker{width:18px;height:18px;font-size:14px}}
+
+
+/* v2.1: special-card captors are identified by replacing their avatar, not by a tiny badge underneath. */
+.avatar-specials{display:none!important}
+.avatar.special-owner{border-color:#ffe5a3;background:radial-gradient(circle at 35% 25%,#fff1d9,#d9a6a3 52%,#7b4763 82%);box-shadow:0 0 0 3px #f7d88a35,0 0 18px #ffdc7b65,inset 0 0 0 3px #7c4b56;font-size:clamp(30px,4vw,43px)}
+.avatar.special-owner.special-both{display:flex;align-items:center;justify-content:center;gap:0;font-size:0;overflow:hidden}
+.avatar-token{display:grid;place-items:center;width:52%;flex:0 0 52%;font-size:clamp(15px,2vw,22px);line-height:1;margin:0 -1px}
+@media(max-width:700px){.avatar.special-owner{font-size:25px}.avatar-token{font-size:14px}}
+@media(max-height:430px) and (orientation:landscape){.avatar.special-owner{font-size:20px}.avatar-token{font-size:12px}}
 
 </style>
 </head>
@@ -893,14 +902,25 @@
     if(panel && freshCards.length){panel.classList.remove('updated');void panel.offsetWidth;panel.classList.add('updated');clearTimeout(panel.updateTimer);panel.updateTimer=setTimeout(()=>panel.classList.remove('updated'),850);}
   }
   function renderAllCaptures(){for(const key of visualOrder)renderCapture(key);}
+  // Capture-based avatar replacement: show the special card icon in place of the player's avatar
+  // only after that player actually wins the trick containing the pig/sheep card.
   function renderSpecialBadges(){
     for(const key of visualOrder){
       const row=$(`${key}AvatarSpecials`);
-      if(!row) continue;
-      const badges=[];
-      if(publicSpecialOwners.pig===key) badges.push('<span class="special-marker pig-marker" title="本局已打出猪">🐷</span>');
-      if(publicSpecialOwners.sheep===key) badges.push('<span class="special-marker sheep-marker" title="本局已打出羊">🐑</span>');
-      row.innerHTML=badges.join('');
+      if(row) row.style.display='none';
+      const avatar=document.querySelector(`.seat.${key} .avatar`);
+      if(!avatar) continue;
+      const captured=players[key].captured||[];
+      const hasPig=captured.some(c=>cardId(c)==='S-Q');
+      const hasSheep=captured.some(c=>cardId(c)==='D-J');
+      avatar.classList.toggle('special-owner',hasPig||hasSheep);
+      avatar.classList.toggle('special-both',hasPig&&hasSheep);
+      if(hasPig&&hasSheep){
+        avatar.innerHTML='<span class="avatar-token" title="已获得猪">🐷</span><span class="avatar-token" title="已获得羊">🐑</span>';
+        avatar.title='已获得猪和羊';
+      }else if(hasPig){avatar.textContent='🐷';avatar.title='已获得猪';}
+      else if(hasSheep){avatar.textContent='🐑';avatar.title='已获得羊';}
+      else {avatar.textContent=players[key].avatar||'🙂';avatar.title='';}
     }
   }
   function renderScores(){
