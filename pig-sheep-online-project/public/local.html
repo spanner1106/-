@@ -42,7 +42,10 @@
   .seat.south{left:3.5%;bottom:22%;}
   .avatar{width:clamp(43px,6.5vw,70px);height:clamp(43px,6.5vw,70px);border-radius:50%;position:relative;display:grid;place-items:center;flex:0 0 auto;background:radial-gradient(circle at 35% 25%,#a9d5ff,#477dc1 48%,#112957 75%);border:2px solid #f4d18b;box-shadow:0 0 0 3px #ffffff1b,0 0 0 5px #dcb66a35,inset 0 0 0 3px #19325b;color:white;font-size:clamp(20px,3vw,32px)}
   .avatar.self{background:radial-gradient(circle at 35% 25%,#ffc8a3,#ba5e58 50%,#4a1f3d 78%)}
-  .lvl{position:absolute;right:-9px;bottom:-2px;font-size:10px;border-radius:5px;padding:2px 5px;background:linear-gradient(#357ac8,#163c7c);border:1px solid #b6dbff;color:#fff;box-shadow:0 2px 5px #07142e}
+  .avatar-wrap{position:relative;display:flex;flex:0 0 auto;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px}
+  .avatar-specials{height:13px;min-width:14px;display:flex;align-items:center;justify-content:center;gap:2px;white-space:nowrap;line-height:1}
+  .avatar-specials:empty{min-width:0}
+  .special-marker{display:inline-grid;place-items:center;width:13px;height:13px;border:1px solid #f4d28a;border-radius:50%;background:linear-gradient(145deg,#153f78,#061b43);box-shadow:0 1px 3px #020b1e80;font-size:9px;line-height:1}
   .seat-info{min-width:82px;padding:7px 10px;border:1px solid rgba(137,184,241,.32);border-radius:12px;background:linear-gradient(115deg,rgba(6,22,58,.9),rgba(23,61,117,.58));box-shadow:inset 0 1px 0 #ffffff14}
   .seat-name{font-size:clamp(10px,1.2vw,14px);font-weight:750;white-space:nowrap;color:#f5f7ff}
   .seat-state{font-size:10px;color:#9fc6ff;margin-top:2px;white-space:nowrap}
@@ -155,7 +158,6 @@
     .seat{gap:4px}
     .seat.north{top:7%;left:50%;gap:4px}
     .seat.north .avatar{width:31px;height:31px;font-size:15px}
-    .seat.north .lvl{font-size:8px;padding:1px 3px;right:-5px}
     .seat.north .seat-info{min-width:82px;padding:4px 6px;border-radius:8px}
     .seat.west{top:26%;left:max(1.5%,env(safe-area-inset-left))}
     .seat.east{top:26%;right:max(1.5%,env(safe-area-inset-right))}
@@ -573,19 +575,19 @@
   </section>
 
   <section class="seat north" aria-label="北家玩家">
-    <div class="avatar">🦊<span class="lvl">17</span></div>
+    <div class="avatar-wrap"><div class="avatar">🦊</div><div class="avatar-specials" id="northAvatarSpecials" aria-label="已打出的猪羊"></div></div>
     <div class="seat-info"><div class="seat-name">清风徐来</div><div class="seat-state" id="northState">本局先手 · 任意牌领出</div><div class="seat-score"><span class="coin">¥</span><span>累计 <b id="northPoints">0</b> 点</span></div></div>
   </section>
   <section class="seat west" aria-label="西家玩家">
-    <div class="avatar">🐼<span class="lvl">16</span></div>
+    <div class="avatar-wrap"><div class="avatar">🐼</div><div class="avatar-specials" id="westAvatarSpecials" aria-label="已打出的猪羊"></div></div>
     <div class="seat-info"><div class="seat-name">落花有意</div><div class="seat-state">等待出牌</div><div class="seat-score"><span class="coin">¥</span><span>累计 <b id="westPoints">0</b> 点</span></div></div>
   </section>
   <section class="seat east" aria-label="东家玩家">
-    <div class="avatar">🐯<span class="lvl">18</span></div>
+    <div class="avatar-wrap"><div class="avatar">🐯</div><div class="avatar-specials" id="eastAvatarSpecials" aria-label="已打出的猪羊"></div></div>
     <div class="seat-info"><div class="seat-name">晴空万里</div><div class="seat-state">等待出牌</div><div class="seat-score"><span class="coin">¥</span><span>累计 <b id="eastPoints">0</b> 点</span></div></div>
   </section>
   <section class="seat south" aria-label="本家玩家">
-    <div class="avatar self">🐉<span class="lvl">你</span></div>
+    <div class="avatar-wrap"><div class="avatar self">🐉</div><div class="avatar-specials" id="southAvatarSpecials" aria-label="已打出的猪羊"></div></div>
     <div class="seat-info"><div class="seat-name">我的座位</div><div class="seat-state" id="selfState">请跟出梅花</div><div class="seat-score"><span class="coin">★</span><span>累计 <b id="southPoints">0</b> 点</span></div></div>
   </section>
 
@@ -818,6 +820,16 @@
     if(panel && freshCards.length){panel.classList.remove('updated');void panel.offsetWidth;panel.classList.add('updated');clearTimeout(panel.updateTimer);panel.updateTimer=setTimeout(()=>panel.classList.remove('updated'),850);}
   }
   function renderAllCaptures(){for(const key of visualOrder)renderCapture(key);}
+  function renderSpecialBadges(){
+    for(const key of visualOrder){
+      const row=$(`${key}AvatarSpecials`);
+      if(!row) continue;
+      const badges=[];
+      if(publicSpecialOwners.pig===key) badges.push('<span class="special-marker pig-marker" title="本局已打出猪">🐷</span>');
+      if(publicSpecialOwners.sheep===key) badges.push('<span class="special-marker sheep-marker" title="本局已打出羊">🐑</span>');
+      row.innerHTML=badges.join('');
+    }
+  }
   function renderScores(){
     for(const key of visualOrder){const el=$(`${key}Points`);if(el)el.textContent=players[key].points;}
     $('targetMeta').textContent=`目标 ${matchTargetPoint} 点`;
@@ -962,7 +974,7 @@
       $('statusText').textContent='整场游戏结束';$('statusIcon').textContent='🏆';$('timer').textContent='✓';$('timerUnit').textContent='';
     }
   }
-  function renderAll(){renderHand();renderTrick();renderAllCaptures();renderScores();updateSeatStates();updateStatus();}
+  function renderAll(){renderHand();renderTrick();renderAllCaptures();renderScores();updateSeatStates();updateStatus();renderSpecialBadges();}
   function stopTimers(){clearTimeout(botTimer);clearTimeout(trickTimer);clearInterval(userTurnTimer);botTimer=null;trickTimer=null;userTurnTimer=null;}
   function startUserTurnTimer(){
     clearInterval(userTurnTimer);secondsLeft=30;updateStatus();
@@ -1169,6 +1181,7 @@
     publicSeenIds.add(cardId(card));
     if(card.id==='S-Q') publicSpecialOwners.pig=playerKey;
     if(card.id==='D-J') publicSpecialOwners.sheep=playerKey;
+    renderSpecialBadges();
     playCardSound();
     lastPlayedPlayer=playerKey;lastPlayedCardId=card.id;lastPlayAnimationUntil=Date.now()+360;
     player.hand.splice(index,1);
